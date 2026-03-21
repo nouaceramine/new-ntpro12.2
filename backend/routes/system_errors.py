@@ -14,7 +14,7 @@ router = APIRouter(prefix="/saas/system-errors", tags=["System Errors"])
 
 # Will be set from server.py
 main_db = None
-SECRET_KEY = os.environ.get("JWT_SECRET", "nt_commerce_super_secure_jwt_secret_key_2024_v3_hardened")
+SECRET_KEY = os.environ.get("JWT_SECRET_KEY", "nt_commerce_super_secure_jwt_secret_key_2024_v3_hardened")
 ALGORITHM = "HS256"
 
 def init_routes(db, super_admin_dep=None):

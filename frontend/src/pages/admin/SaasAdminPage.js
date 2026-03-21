@@ -124,7 +124,7 @@ export default function SaasAdminPage() {
       const token = localStorage.getItem('token');
       const headers = { Authorization: `Bearer ${token}` };
       
-      const [statsRes, tenantsRes, plansRes, paymentsRes, agentsRes] = await Promise.all([
+      const [statsRes, tenantsRes, plansRes, paymentsRes, agentsRes] = await Promise.allSettled([
         axios.get(`${API}/saas/stats`, { headers }),
         axios.get(`${API}/saas/tenants`, { headers }),
         axios.get(`${API}/saas/plans?include_inactive=true`, { headers }),
@@ -132,11 +132,17 @@ export default function SaasAdminPage() {
         axios.get(`${API}/saas/agents`, { headers })
       ]);
       
-      setStats(statsRes.data);
-      setTenants(tenantsRes.data);
-      setPlans(plansRes.data);
-      setPayments(paymentsRes.data);
-      setAgents(agentsRes.data);
+      if (statsRes.status === 'fulfilled') setStats(statsRes.value.data);
+      if (tenantsRes.status === 'fulfilled') setTenants(tenantsRes.value.data);
+      if (plansRes.status === 'fulfilled') setPlans(plansRes.value.data);
+      if (paymentsRes.status === 'fulfilled') setPayments(paymentsRes.value.data);
+      if (agentsRes.status === 'fulfilled') setAgents(agentsRes.value.data);
+      
+      const failed = [statsRes, tenantsRes, plansRes, paymentsRes, agentsRes].filter(r => r.status === 'rejected');
+      if (failed.length > 0) {
+        console.error('Some requests failed:', failed.map(f => f.reason?.message));
+        toast.error('بعض البيانات لم تحمل بشكل كامل');
+      }
     } catch (error) {
       console.error('Error fetching data:', error);
       toast.error('خطأ في تحميل البيانات');

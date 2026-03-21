@@ -29,7 +29,7 @@ security = HTTPBearer()
 from config.database import main_db, client, get_tenant_db
 
 # JWT Settings
-SECRET_KEY = os.environ.get('JWT_SECRET', 'screenguard-secret-key-2024')
+SECRET_KEY = os.environ.get('JWT_SECRET_KEY', 'nt_commerce_super_secure_jwt_secret_key_2024_v3_hardened')
 ALGORITHM = "HS256"
 import jwt
 

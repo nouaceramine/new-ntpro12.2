@@ -21,9 +21,9 @@ sys.path.insert(0, '/app/backend')
 
 from config.database import db, main_db, client, get_tenant_db, init_tenant_database
 
-# JWT Settings (same as server.py)
+# JWT Settings - use same key as main.py
 import os
-SECRET_KEY = os.environ.get('SECRET_KEY', 'your-secret-key-change-in-production')
+SECRET_KEY = os.environ.get('JWT_SECRET_KEY', os.environ.get('SECRET_KEY', 'nt_commerce_super_secure_jwt_secret_key_2024_v3_hardened'))
 ALGORITHM = "HS256"
 
 security = HTTPBearer()
@@ -152,6 +152,7 @@ class TenantResponse(BaseModel):
 
     class Config:
         from_attributes = True
+        extra = "ignore"
 
 class SubscriptionPayment(BaseModel):
     amount: float
@@ -242,7 +243,7 @@ async def delete_plan(plan_id: str, admin: dict = Depends(get_super_admin)):
 
 # ============ TENANTS ROUTES ============
 
-@router.get("/saas/tenants", response_model=List[TenantResponse])
+@router.get("/saas/tenants")
 async def get_tenants(admin: dict = Depends(get_super_admin)):
     """Get all tenants"""
     tenants = await db.saas_tenants.find({}, {"_id": 0}).sort("created_at", -1).to_list(1000)
@@ -251,28 +252,37 @@ async def get_tenants(admin: dict = Depends(get_super_admin)):
     agents_list = await db.saas_agents.find({}, {"_id": 0, "id": 1, "name": 1}).to_list(1000)
     agents_map = {a["id"]: a["name"] for a in agents_list}
     
-    # Add plan names, agent names, and stats
-    for tenant in tenants:
-        plan = await db.saas_plans.find_one({"id": tenant.get("plan_id")}, {"_id": 0, "name": 1, "name_ar": 1})
-        tenant["plan_name"] = plan.get("name_ar", "") if plan else ""
-        
-        # Add agent name
-        agent_id = tenant.get("agent_id")
-        tenant["agent_name"] = agents_map.get(agent_id, "") if agent_id else ""
-        
-        # Get tenant stats
-        tenant_db = client[f"tenant_{tenant['id'].replace('-', '_')}"]
-        products_count = await tenant_db.products.count_documents({})
-        users_count = await tenant_db.users.count_documents({})
-        sales_count = await tenant_db.sales.count_documents({})
-        
-        tenant["stats"] = {
-            "products": products_count,
-            "users": users_count,
-            "sales": sales_count
-        }
+    # Cache plans for lookup
+    plans_list = await db.saas_plans.find({}, {"_id": 0, "id": 1, "name": 1, "name_ar": 1}).to_list(100)
+    plans_map = {p["id"]: p.get("name_ar", p.get("name", "")) for p in plans_list}
     
-    return [TenantResponse(**t) for t in tenants]
+    result = []
+    for tenant in tenants:
+        try:
+            # Add plan name
+            tenant["plan_name"] = plans_map.get(tenant.get("plan_id", ""), "")
+            
+            # Add agent name
+            agent_id = tenant.get("agent_id")
+            tenant["agent_name"] = agents_map.get(agent_id, "") if agent_id else ""
+            
+            # Get tenant stats safely
+            try:
+                tenant_db_name = f"tenant_{tenant['id'].replace('-', '_')}"
+                t_db = client[tenant_db_name]
+                products_count = await t_db.products.count_documents({})
+                users_count = await t_db.users.count_documents({})
+                sales_count = await t_db.sales.count_documents({})
+                tenant["stats"] = {"products": products_count, "users": users_count, "sales": sales_count}
+            except Exception:
+                tenant["stats"] = {"products": 0, "users": 0, "sales": 0}
+            
+            result.append(TenantResponse(**tenant))
+        except Exception as e:
+            logger.error(f"Error processing tenant {tenant.get('id', 'unknown')}: {e}")
+            continue
+    
+    return result
 
 @router.get("/saas/tenants/{tenant_id}", response_model=TenantResponse)
 async def get_tenant(tenant_id: str, admin: dict = Depends(get_super_admin)):
