@@ -100,7 +100,7 @@ export const Layout = ({ children }) => {
   });
   const [expandedSections, setExpandedSections] = useState(() => {
     const saved = localStorage.getItem('expandedSections');
-    return saved ? JSON.parse(saved) : ['الرئيسية', 'Principal', 'المالية', 'Finances'];
+    return saved ? JSON.parse(saved) : ['الرئيسية', 'Accueil', 'المبيعات والمشتريات', 'Ventes & Achats'];
   });
   const [notifications, setNotifications] = useState([]);
   const [showNotifications, setShowNotifications] = useState(false);
@@ -251,15 +251,32 @@ export const Layout = ({ children }) => {
   ];
 
   // Default nav sections for Tenants and regular users
-  // Each section has a featureKey that maps to the feature flags
+  // Reorganized into 7 clear sections
   const tenantNavSections = [
     {
       id: 'main',
-      featureKey: null, // Always visible
-      title: language === 'ar' ? 'الرئيسية' : 'Principal',
+      featureKey: null,
+      title: language === 'ar' ? 'الرئيسية' : 'Accueil',
       icon: LayoutDashboard,
       items: [
         { path: '/', icon: LayoutDashboard, label: t.dashboard },
+        { path: '/smart-dashboard', icon: Sparkles, label: language === 'ar' ? 'لوحة التحكم الذكية' : 'Dashboard Intelligent' },
+      ]
+    },
+    {
+      id: 'sales-purchases',
+      featureKey: null,
+      title: language === 'ar' ? 'المبيعات والمشتريات' : 'Ventes & Achats',
+      icon: ShoppingCart,
+      items: [
+        { path: '/pos', icon: ShoppingCart, label: t.pos, subFeature: 'pos' },
+        { path: '/sales', icon: Receipt, label: t.sales, subFeature: 'invoices' },
+        { path: '/daily-sessions', icon: Clock, label: language === 'ar' ? 'حصص البيع' : 'Sessions' },
+        { path: '/sales/advanced-report', icon: BarChart3, label: language === 'ar' ? 'تقارير المبيعات' : 'Rapports ventes' },
+        { path: '/purchases', icon: ShoppingBag, label: t.purchases, subFeature: 'purchase_orders' },
+        { path: '/suppliers', icon: Truck, label: t.suppliers, subFeature: 'suppliers' },
+        { path: '/supplier-families', icon: FolderTree, label: language === 'ar' ? 'عائلات الموردين' : 'Familles fournisseurs' },
+        { path: '/supplier-tracking', icon: Truck, label: language === 'ar' ? 'تتبع الموردين' : 'Suivi fournisseurs' },
       ]
     },
     {
@@ -272,229 +289,92 @@ export const Layout = ({ children }) => {
         { path: '/product-families', icon: FolderTree, label: t.productFamilies, subFeature: 'categories' },
         { path: '/warehouses', icon: Warehouse, label: language === 'ar' ? 'المخازن' : 'Entrepôts', subFeature: 'warehouses' },
         { path: '/inventory-count', icon: ClipboardList, label: language === 'ar' ? 'جرد المخزون' : 'Inventaire', subFeature: 'inventory_count' },
-        { path: '/barcode-print', icon: QrCode, label: language === 'ar' ? 'طباعة الباركود' : 'Codes-barres', subFeature: 'barcode' },
+        { path: '/barcode-print', icon: QrCode, label: language === 'ar' ? 'الباركود' : 'Codes-barres', subFeature: 'barcode' },
         { path: '/bulk-price-update', icon: DollarSign, label: t.bulkPriceUpdate },
         { path: '/price-history', icon: History, label: language === 'ar' ? 'سجل الأسعار' : 'Historique prix' },
       ]
     },
     {
-      id: 'purchases',
-      featureKey: 'purchases',
-      title: language === 'ar' ? 'المشتريات' : 'Achats',
-      icon: ShoppingBag,
-      items: [
-        { path: '/purchases', icon: ShoppingBag, label: t.purchases, subFeature: 'purchase_orders' },
-        { path: '/suppliers', icon: Truck, label: t.suppliers, subFeature: 'suppliers' },
-        { path: '/supplier-families', icon: FolderTree, label: language === 'ar' ? 'عائلات الموردين' : 'Familles fournisseurs' },
-      ]
-    },
-    {
-      id: 'customers',
-      featureKey: 'customers',
-      title: language === 'ar' ? 'الزبائن' : 'Clients',
+      id: 'customers-finance',
+      featureKey: null,
+      title: language === 'ar' ? 'الزبائن والمالية' : 'Clients & Finance',
       icon: Users,
       items: [
         { path: '/customers', icon: Users, label: t.customers, subFeature: 'customer_list' },
         { path: '/customer-families', icon: FolderTree, label: language === 'ar' ? 'عائلات الزبائن' : 'Familles clients', subFeature: 'customer_families' },
         { path: '/customer-debts', icon: CreditCard, label: t.customerDebts, subFeature: 'customer_debts' },
+        { path: '/cash', icon: Wallet, label: t.cashManagement },
+        { path: '/expenses', icon: Receipt, label: language === 'ar' ? 'المصاريف' : 'Dépenses' },
+        { path: '/debts', icon: Receipt, label: t.debts },
+        { path: '/payments', icon: CreditCard, label: language === 'ar' ? 'المدفوعات' : 'Paiements' },
+        { path: '/tax-reports', icon: FileText, label: language === 'ar' ? 'الضرائب' : 'Taxes' },
+        { path: '/currencies', icon: Coins, label: language === 'ar' ? 'العملات' : 'Devises' },
+        { path: '/banking', icon: Landmark, label: language === 'ar' ? 'البنك' : 'Banque' },
       ]
     },
     {
-      id: 'sales',
-      featureKey: 'sales',
-      title: language === 'ar' ? 'المبيعات' : 'Ventes',
-      icon: Receipt,
-      items: [
-        { path: '/pos', icon: ShoppingCart, label: t.pos, subFeature: 'pos' },
-        { path: '/daily-sessions', icon: Clock, label: language === 'ar' ? 'حصص البيع اليومية' : 'Sessions journalières' },
-        { path: '/sales', icon: Receipt, label: t.sales, subFeature: 'invoices' },
-        { path: '/sales/advanced-report', icon: BarChart3, label: language === 'ar' ? 'تقارير متقدمة' : 'Rapports avancés' },
-      ]
-    },
-    {
-      id: 'reports',
-      featureKey: 'reports',
-      title: language === 'ar' ? 'التقارير' : 'Rapports',
-      icon: BarChart3,
-      items: [
-        { path: '/reports', icon: BarChart3, label: t.reports, subFeature: 'sales_reports' },
-        { path: '/analytics', icon: BarChart3, label: language === 'ar' ? 'إحصائيات متقدمة' : 'Analyses avancées', subFeature: 'financial_reports' },
-        { path: '/smart-reports', icon: Sparkles, label: language === 'ar' ? 'تقارير ذكية' : 'Rapports intelligents', subFeature: 'smart_reports' },
-      ]
-    },
-    {
-      id: 'ai',
-      featureKey: null, // Always visible - AI features
-      title: language === 'ar' ? 'الذكاء الاصطناعي' : 'Intelligence Artificielle',
+      id: 'ai-reports',
+      featureKey: null,
+      title: language === 'ar' ? 'الذكاء الاصطناعي والتقارير' : 'IA & Rapports',
       icon: Sparkles,
       items: [
-        { path: '/smart-dashboard', icon: LayoutDashboard, label: language === 'ar' ? 'لوحة التحكم الذكية' : 'Dashboard Intelligent' },
         { path: '/ai-chat', icon: Sparkles, label: language === 'ar' ? 'المحاسب الذكي' : 'Comptable IA' },
         { path: '/ai-agents', icon: Zap, label: language === 'ar' ? 'الوكلاء الذكيين' : 'Agents IA' },
-        { path: '/robots', icon: Bot, label: language === 'ar' ? 'الروبوتات الذكية' : 'Smart Robots' },
-      ]
-    },
-    {
-      id: 'finance',
-      featureKey: null,
-      title: language === 'ar' ? 'المالية والضرائب' : 'Finance & Taxes',
-      icon: FileText,
-      items: [
-        { path: '/tax-reports', icon: FileText, label: language === 'ar' ? 'التقارير الضريبية' : 'Tax Reports' },
-        { path: '/currencies', icon: Coins, label: language === 'ar' ? 'العملات' : 'Currencies' },
-        { path: '/banking', icon: Landmark, label: language === 'ar' ? 'التكامل البنكي' : 'Banking' },
-      ]
-    },
-    {
-      id: 'integrations',
-      featureKey: null,
-      title: language === 'ar' ? 'التكاملات' : 'Integrations',
-      icon: MessageSquare,
-      items: [
-        { path: '/whatsapp', icon: MessageSquare, label: language === 'ar' ? 'WhatsApp Business' : 'WhatsApp Business' },
-        { path: '/integrations/yalidine', icon: Truck, label: language === 'ar' ? 'Yalidine شحن' : 'Yalidine Shipping' },
-        { path: '/integrations/status', icon: Settings, label: language === 'ar' ? 'حالة التكاملات' : 'Integration Status' },
-      ]
-    },
-    {
-      id: 'notifications',
-      featureKey: 'notifications',
-      title: language === 'ar' ? 'الإشعارات' : 'Notifications',
-      icon: Bell,
-      items: [
-        { path: '/notifications', icon: Bell, label: language === 'ar' ? 'الإشعارات' : 'Notifications', subFeature: 'push_notifications' },
-        { path: '/smart-notifications', icon: Bell, label: language === 'ar' ? 'الإشعارات الذكية' : 'Smart Notifications' },
-        { path: '/email-notifications', icon: Mail, label: language === 'ar' ? 'إشعارات البريد' : 'Email Notifications', subFeature: 'email_notifications' },
-      ]
-    },
-    {
-      id: 'payments',
-      featureKey: null, // Always visible
-      title: language === 'ar' ? 'المدفوعات' : 'Payments',
-      icon: CreditCard,
-      items: [
-        { path: '/payments', icon: CreditCard, label: language === 'ar' ? 'إدارة المدفوعات' : 'Payments Management' },
-      ]
-    },
-    {
-      id: 'loyalty',
-      featureKey: null, // Always visible
-      title: language === 'ar' ? 'الولاء والتسويق' : 'Fidélité & Marketing',
-      icon: Award,
-      items: [
-        { path: '/loyalty', icon: Award, label: language === 'ar' ? 'برنامج الولاء' : 'Programme fidélité' },
-      ]
-    },
-    {
-      id: 'ecommerce',
-      featureKey: 'ecommerce',
-      title: language === 'ar' ? 'المتجر الإلكتروني' : 'E-Commerce',
-      icon: Store,
-      items: [
-        { path: '/store', icon: Store, label: language === 'ar' ? 'إدارة المتجر' : 'Store Management', subFeature: 'online_store' },
-      ]
-    },
-    {
-      id: 'administration',
-      featureKey: null, // Always visible
-      title: language === 'ar' ? 'الإدارة' : 'Administration',
-      icon: Settings,
-      items: [
-        { path: '/cash', icon: Wallet, label: t.cashManagement },
-        { path: '/expenses', icon: Receipt, label: language === 'ar' ? 'التكاليف' : 'Dépenses' },
-        { path: '/debts', icon: Receipt, label: t.debts },
-        { path: '/employees', icon: Users, label: language === 'ar' ? 'الموظفين' : 'Employés' },
-        { path: '/employee-alerts', icon: Bell, label: language === 'ar' ? 'تنبيهات الحدود' : 'Alertes limites' },
-        { path: '/users', icon: Shield, label: language === 'ar' ? 'المستخدمين' : 'Utilisateurs' },
-        { path: '/permissions', icon: Shield, label: language === 'ar' ? 'الصلاحيات' : 'Permissions' },
-        { path: '/settings/sales-permissions', icon: Shield, label: language === 'ar' ? 'صلاحيات المبيعات' : 'Permissions ventes' },
-      ]
-    },
-    {
-      id: 'repairs',
-      featureKey: 'repairs',
-      title: language === 'ar' ? 'الصيانة' : 'Réparations',
-      icon: Wrench,
-      items: [
-        { path: '/repairs', icon: ClipboardList, label: language === 'ar' ? 'تتبع الصيانة' : 'Suivi réparations', subFeature: 'repair_tickets' },
-        { path: '/repairs/new', icon: Smartphone, label: language === 'ar' ? 'استقبال جهاز' : 'Réception appareil' },
-        { path: '/defective-goods', icon: PackageX, label: language === 'ar' ? 'البضائع المعيبة' : 'Produits défectueux' },
-      ]
-    },
-    {
-      id: 'supplier-tracking',
-      featureKey: null,
-      title: language === 'ar' ? 'تتبع الموردين' : 'Suivi Fournisseurs',
-      icon: Truck,
-      items: [
-        { path: '/supplier-tracking', icon: Truck, label: language === 'ar' ? 'تتبع الموردين' : 'Suivi fournisseurs' },
-      ]
-    },
-    {
-      id: 'tasks-chat',
-      featureKey: null,
-      title: language === 'ar' ? 'المهام والتواصل' : 'Tâches & Communication',
-      icon: CheckSquare,
-      items: [
-        { path: '/task-management', icon: CheckSquare, label: language === 'ar' ? 'إدارة المهام' : 'Gestion tâches' },
-        { path: '/internal-chat', icon: MessageCircle, label: language === 'ar' ? 'الدردشة الداخلية' : 'Chat interne' },
-      ]
-    },
-    {
-      id: 'system-tools',
-      featureKey: null,
-      title: language === 'ar' ? 'أدوات النظام' : 'Outils Système',
-      icon: Database,
-      items: [
-        { path: '/backup-system', icon: Database, label: language === 'ar' ? 'النسخ الاحتياطي' : 'Sauvegardes' },
-        { path: '/wallet-management', icon: Wallet, label: language === 'ar' ? 'المحفظة' : 'Portefeuille' },
-        { path: '/two-factor', icon: Shield, label: language === 'ar' ? 'المصادقة الثنائية' : '2FA' },
+        { path: '/robots', icon: Bot, label: language === 'ar' ? 'الروبوتات' : 'Robots' },
+        { path: '/reports', icon: BarChart3, label: t.reports, subFeature: 'sales_reports' },
+        { path: '/analytics', icon: BarChart3, label: language === 'ar' ? 'إحصائيات متقدمة' : 'Analyses', subFeature: 'financial_reports' },
+        { path: '/smart-reports', icon: Sparkles, label: language === 'ar' ? 'تقارير ذكية' : 'Rapports IA', subFeature: 'smart_reports' },
       ]
     },
     {
       id: 'services',
-      featureKey: null, // Always visible
+      featureKey: null,
       title: language === 'ar' ? 'الخدمات' : 'Services',
       icon: Smartphone,
       items: [
-        { path: '/services', icon: Store, label: language === 'ar' ? 'الصفحة الرئيسية' : 'Accueil services' },
+        { path: '/services', icon: Store, label: language === 'ar' ? 'الخدمات' : 'Services' },
         { path: '/services/flexy', icon: Smartphone, label: language === 'ar' ? 'فليكسي' : 'Flexy' },
-        { path: '/services/idoom', icon: Zap, label: language === 'ar' ? 'تعبئة أيدوم' : 'Recharge Idoom' },
+        { path: '/services/idoom', icon: Zap, label: language === 'ar' ? 'أيدوم' : 'Idoom' },
         { path: '/services/cards', icon: CreditCard, label: language === 'ar' ? 'بطاقات' : 'Cartes' },
-        { path: '/services/operations', icon: Clock, label: language === 'ar' ? 'كل العمليات' : 'Opérations' },
-        { path: '/services/profits', icon: DollarSign, label: language === 'ar' ? 'نسب الأرباح' : 'Taux profits' },
+        { path: '/services/operations', icon: Clock, label: language === 'ar' ? 'العمليات' : 'Opérations' },
+        { path: '/services/profits', icon: DollarSign, label: language === 'ar' ? 'الأرباح' : 'Profits' },
         { path: '/services/transfers', icon: Receipt, label: language === 'ar' ? 'التحويلات' : 'Transferts' },
-        { path: '/services/directory', icon: Users, label: language === 'ar' ? 'دليل الهاتف' : 'Annuaire' },
+        { path: '/services/directory', icon: Users, label: language === 'ar' ? 'الدليل' : 'Annuaire' },
         { path: '/recharge', icon: Smartphone, label: t.recharge },
+        { path: '/repairs', icon: Wrench, label: language === 'ar' ? 'الصيانة' : 'Réparations', subFeature: 'repair_tickets' },
+        { path: '/repairs/new', icon: Smartphone, label: language === 'ar' ? 'استقبال جهاز' : 'Réception' },
+        { path: '/defective-goods', icon: PackageX, label: language === 'ar' ? 'بضائع معيبة' : 'Défectueux' },
+        { path: '/loyalty', icon: Award, label: language === 'ar' ? 'الولاء' : 'Fidélité' },
+        { path: '/store', icon: Store, label: language === 'ar' ? 'المتجر' : 'Boutique', subFeature: 'online_store' },
         ...(isAdmin ? [
           { path: '/sim-management', icon: Zap, label: language === 'ar' ? 'إدارة الشرائح' : 'Gestion SIM' },
         ] : [])
       ]
     },
     ...(isAdmin ? [{
-      id: 'woocommerce',
-      featureKey: 'ecommerce',
-      title: 'WooCommerce',
-      icon: Store,
-      items: [
-        { path: '/woocommerce', icon: Store, label: 'WooCommerce', subFeature: 'woocommerce' },
-      ]
-    }] : []),
-    ...(isAdmin ? [{
-      id: 'shipping',
-      featureKey: 'delivery',
-      title: language === 'ar' ? 'التوصيل' : 'Livraison',
-      icon: Truck,
-      items: [
-        { path: '/shipping', icon: Truck, label: language === 'ar' ? 'شركات الشحن' : 'Transporteurs', subFeature: 'shipping_companies' },
-      ]
-    }] : []),
-    ...(isAdmin ? [{
-      id: 'settings',
-      featureKey: null, // Always visible
-      title: language === 'ar' ? 'الإعدادات' : 'Paramètres',
+      id: 'settings-admin',
+      featureKey: null,
+      title: language === 'ar' ? 'الإعدادات والإدارة' : 'Paramètres',
       icon: Settings,
       items: [
+        { path: '/users', icon: Shield, label: language === 'ar' ? 'المستخدمين' : 'Utilisateurs' },
+        { path: '/permissions', icon: Shield, label: language === 'ar' ? 'الصلاحيات' : 'Permissions' },
+        { path: '/settings/sales-permissions', icon: Shield, label: language === 'ar' ? 'صلاحيات المبيعات' : 'Perm. ventes' },
+        { path: '/employees', icon: Users, label: language === 'ar' ? 'الموظفين' : 'Employés' },
+        { path: '/employee-alerts', icon: Bell, label: language === 'ar' ? 'تنبيهات الحدود' : 'Alertes' },
+        { path: '/notifications', icon: Bell, label: language === 'ar' ? 'الإشعارات' : 'Notifications', subFeature: 'push_notifications' },
+        { path: '/smart-notifications', icon: Bell, label: language === 'ar' ? 'إشعارات ذكية' : 'Notif. IA' },
+        { path: '/email-notifications', icon: Mail, label: language === 'ar' ? 'إشعارات البريد' : 'Email', subFeature: 'email_notifications' },
+        { path: '/whatsapp', icon: MessageSquare, label: 'WhatsApp' },
+        { path: '/integrations/yalidine', icon: Truck, label: 'Yalidine' },
+        { path: '/integrations/status', icon: Settings, label: language === 'ar' ? 'حالة التكاملات' : 'Intégrations' },
+        { path: '/backup-system', icon: Database, label: language === 'ar' ? 'النسخ الاحتياطي' : 'Sauvegardes' },
+        { path: '/wallet-management', icon: Wallet, label: language === 'ar' ? 'المحفظة' : 'Portefeuille' },
+        { path: '/two-factor', icon: Shield, label: language === 'ar' ? '2FA' : '2FA' },
+        { path: '/task-management', icon: CheckSquare, label: language === 'ar' ? 'المهام' : 'Tâches' },
+        { path: '/internal-chat', icon: MessageCircle, label: language === 'ar' ? 'الدردشة' : 'Chat' },
+        { path: '/shipping', icon: Truck, label: language === 'ar' ? 'الشحن' : 'Livraison', subFeature: 'shipping_companies' },
+        { path: '/woocommerce', icon: Store, label: 'WooCommerce', subFeature: 'woocommerce' },
         { path: '/api-keys', icon: Key, label: t.apiKeys },
         { path: '/settings', icon: Settings, label: t.settings },
         { path: '/settings/sidebar', icon: LayoutDashboard, label: language === 'ar' ? 'ترتيب القائمة' : 'Ordre menu' },
