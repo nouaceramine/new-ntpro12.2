@@ -60,11 +60,11 @@ def create_ai_assistant_routes(db, get_current_user, get_tenant_admin, require_t
             chat = LlmChat(api_key=emergent_key, session_id=session_id, system_message=get_ai_system_message(request.context)).with_model("openai", "gpt-4o")
             context_data = ""
             if request.context == "sales":
-                recent_sales = await db.sales.find().sort("created_at", -1).limit(10).to_list(10)
+                recent_sales = await db.sales.find({}, {"_id": 0}).sort("created_at", -1).limit(10).to_list(10)
                 total_today = sum(s.get("total", 0) for s in recent_sales if s.get("created_at", "").startswith(datetime.now(timezone.utc).strftime("%Y-%m-%d")))
                 context_data = f"\n\nبيانات المبيعات: إجمالي اليوم: {total_today} دج"
             elif request.context == "inventory":
-                low_stock = await db.products.find({"quantity": {"$lt": 10}}).to_list(20)
+                low_stock = await db.products.find({"quantity": {"$lt": 10}}, {"_id": 0}).to_list(20)
                 context_data = f"\n\nالمنتجات منخفضة المخزون: {len(low_stock)} منتج"
             elif request.context == "customers":
                 total_customers = await db.customers.count_documents({})
@@ -106,7 +106,7 @@ def create_ai_assistant_routes(db, get_current_user, get_tenant_admin, require_t
         try:
             chat = LlmChat(api_key=emergent_key, session_id=f"analysis_{user['id']}_{datetime.now(timezone.utc).timestamp()}", system_message="أنت محلل بيانات ذكي لنظام نقاط البيع. قدم تحليلات مختصرة ومفيدة باللغة العربية.").with_model("openai", "gpt-4o")
             if request.analysis_type == "sales_forecast":
-                sales = await db.sales.find().sort("created_at", -1).limit(100).to_list(100)
+                sales = await db.sales.find({}, {"_id": 0}).sort("created_at", -1).limit(100).to_list(100)
                 daily_sales = {}
                 for sale in sales:
                     date = sale.get("created_at", "")[:10]
@@ -116,7 +116,7 @@ def create_ai_assistant_routes(db, get_current_user, get_tenant_admin, require_t
                 response = await chat.send_message(UserMessage(text=prompt))
                 return {"analysis": response, "type": "sales_forecast"}
             elif request.analysis_type == "restock":
-                products = await db.products.find({"quantity": {"$lte": 20}}).to_list(50)
+                products = await db.products.find({"quantity": {"$lte": 20}}, {"_id": 0}).to_list(50)
                 product_list = [f"- {p.get('name_ar', '')}: كمية {p.get('quantity', 0)}" for p in products[:20]]
                 prompt = f"هذه المنتجات تحتاج مراجعة:\n{chr(10).join(product_list)}\nقدم ترتيباً حسب الأولوية."
                 response = await chat.send_message(UserMessage(text=prompt))
@@ -127,7 +127,7 @@ def create_ai_assistant_routes(db, get_current_user, get_tenant_admin, require_t
                 response = await chat.send_message(UserMessage(text=prompt))
                 return {"analysis": response, "type": "product_description"}
             elif request.analysis_type == "customer_insights":
-                customers = await db.customers.find().to_list(100)
+                customers = await db.customers.find({}, {"_id": 0}).to_list(100)
                 total_debt = sum(c.get("debt", 0) for c in customers)
                 prompt = f"حلل بيانات العملاء: إجمالي {len(customers)} عميل، ديون {total_debt} دج"
                 response = await chat.send_message(UserMessage(text=prompt))
