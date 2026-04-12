@@ -5,6 +5,7 @@ import { LanguageProvider } from "./contexts/LanguageContext";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { DateFormatProvider } from "./contexts/DateFormatContext";
+import ErrorBoundary from "./components/ErrorBoundary";
 
 // Import global date formatter to apply Western numerals system-wide
 import './utils/globalDateFormatter';
@@ -799,7 +800,9 @@ function App() {
         <DateFormatProvider>
           <AuthProvider>
             <BrowserRouter>
-              <AppRoutes />
+              <ErrorBoundary>
+                <AppRoutes />
+              </ErrorBoundary>
               <Toaster position="top-center" richColors />
             </BrowserRouter>
           </AuthProvider>
