@@ -1183,14 +1183,14 @@ class ProductFamilyUpdate(BaseModel):
 class ProductFamilyResponse(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str
-    name_en: str
-    name_ar: str
-    description_en: str
-    description_ar: str
-    parent_id: str
-    parent_name: str
-    product_count: int
-    created_at: str
+    name_en: str = ""
+    name_ar: str = ""
+    description_en: str = ""
+    description_ar: str = ""
+    parent_id: str = ""
+    parent_name: str = ""
+    product_count: int = 0
+    created_at: str = ""
 
 # ============ OCR & OTHER MODELS ============
 
