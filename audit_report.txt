@@ -1,0 +1,3512 @@
+========================================
+🔍 NT COMMERCE - CODE AUDIT REPORT
+========================================
+
+📁 BACKEND FILES:
+
+=== server.py ===
+"""
+NT Commerce API Server - Legacy Entry Point
+Delegates to main.py which contains the actual application.
+This file exists only for supervisor compatibility.
+"""
+from main import app
+
+=== requirements.txt ===
+aiohappyeyeballs==2.6.1
+aiohttp==3.13.3
+aiosignal==1.4.0
+annotated-types==0.7.0
+anyio==4.12.1
+APScheduler==3.11.2
+attrs==25.4.0
+bcrypt==4.1.3
+black==26.1.0
+boto3==1.42.42
+botocore==1.42.42
+certifi==2026.1.4
+cffi==2.0.0
+charset-normalizer==3.4.4
+click==8.3.1
+coverage==7.13.4
+cryptography==46.0.4
+Deprecated==1.3.1
+distro==1.9.0
+dnspython==2.8.0
+ecdsa==0.19.1
+email-validator==2.3.0
+emergentintegrations==0.1.0
+et_xmlfile==2.0.0
+fastapi==0.110.1
+fastuuid==0.14.0
+filelock==3.20.3
+flake8==7.3.0
+frozenlist==1.8.0
+fsspec==2026.1.0
+google-ai-generativelanguage==0.6.15
+google-api-core==2.29.0
+google-api-python-client==2.189.0
+google-auth==2.49.0.dev0
+google-auth-httplib2==0.3.0
+google-genai==1.62.0
+google-generativeai==0.8.6
+googleapis-common-protos==1.72.0
+grpcio==1.76.0
+grpcio-status==1.71.2
+h11==0.16.0
+hf-xet==1.2.0
+httpcore==1.0.9
+httplib2==0.31.2
+httpx==0.28.1
+huggingface_hub==1.4.0
+idna==3.11
+importlib_metadata==8.7.1
+iniconfig==2.3.0
+isort==7.0.0
+Jinja2==3.1.6
+jiter==0.13.0
+jmespath==1.1.0
+joblib==1.5.3
+jq==1.11.0
+jsonschema==4.26.0
+jsonschema-specifications==2025.9.1
+librt==0.7.8
+limits==5.8.0
+litellm==1.80.0
+markdown-it-py==4.0.0
+MarkupSafe==3.0.3
+mccabe==0.7.0
+mdurl==0.1.2
+motor==3.3.1
+multidict==6.7.1
+mypy==1.19.1
+mypy_extensions==1.1.0
+numpy==2.4.2
+oauthlib==3.3.1
+openai==1.99.9
+openpyxl==3.1.5
+packaging==26.0
+pandas==3.0.0
+passlib==1.7.4
+pathspec==1.0.4
+pillow==12.1.0
+platformdirs==4.5.1
+pluggy==1.6.0
+propcache==0.4.1
+proto-plus==1.27.1
+protobuf==5.29.6
+pyasn1==0.6.2
+pyasn1_modules==0.4.2
+pycodestyle==2.14.0
+pycparser==3.0
+pydantic==2.12.5
+pydantic_core==2.41.5
+pyflakes==3.4.0
+Pygments==2.19.2
+PyJWT==2.11.0
+pymongo==4.5.0
+pyotp==2.9.0
+pyparsing==3.3.2
+pytest==9.0.2
+pytest-asyncio==1.3.0
+pytest-cov==7.0.0
+python-dateutil==2.9.0.post0
+python-dotenv==1.2.1
+python-http-client==3.3.7
+python-jose==3.5.0
+python-multipart==0.0.22
+pytokens==0.4.1
+PyYAML==6.0.3
+qrcode==8.2
+redis==7.3.0
+referencing==0.37.0
+regex==2026.1.15
+reportlab==4.4.10
+requests==2.32.5
+requests-oauthlib==2.0.0
+resend==2.21.0
+rich==14.3.2
+rpds-py==0.30.0
+rsa==4.9.1
+s3transfer==0.16.0
+s5cmd==0.2.0
+scikit-learn==1.8.0
+scipy==1.17.1
+sendgrid==6.12.5
+shellingham==1.5.4
+six==1.17.0
+slowapi==0.1.9
+sniffio==1.3.1
+starlette==0.37.2
+stripe==14.3.0
+tenacity==9.1.2
+threadpoolctl==3.6.0
+tiktoken==0.12.0
+tokenizers==0.22.2
+tqdm==4.67.3
+typer==0.21.1
+typer-slim==0.21.1
+typing-inspection==0.4.2
+typing_extensions==4.15.0
+tzdata==2025.3
+tzlocal==5.3.1
+uritemplate==4.2.0
+urllib3==2.6.3
+uvicorn==0.25.0
+watchfiles==1.1.1
+websockets==15.0.1
+Werkzeug==3.1.5
+wrapt==2.1.2
+yarl==1.22.0
+zipp==3.23.0
+
+=== schemas.py ===
+"""
+Pydantic Models for NT Commerce API
+All data models used across the application
+"""
+from pydantic import BaseModel, Field, ConfigDict, field_validator
+from typing import List, Optional, Literal
+
+# ============ USER MODELS ============
+
+class UserCreate(BaseModel):
+    email: str
+    password: str
+    name: str
+    role: str = "user"
+    permissions: Optional[dict] = None
+    tenant_id: Optional[str] = None  # For multi-tenant
+
+class UserLogin(BaseModel):
+    email: str
+    password: str
+
+class UserUpdate(BaseModel):
+    name: Optional[str] = None
+    role: Optional[str] = None
+    permissions: Optional[dict] = None
+
+class PasswordUpdate(BaseModel):
+    new_password: str
+
+class UserResponse(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str
+    email: str
+    name: str
+    role: str
+    permissions: dict = {}
+    tenant_id: Optional[str] = None
+    user_type: Optional[str] = None
+    company_name: Optional[str] = None
+    features: Optional[dict] = None
+    limits: Optional[dict] = None
+    created_at: Optional[str] = None
+
+# ============ SAAS MODELS ============
+
+class PlanCreate(BaseModel):
+    name: str
+    name_ar: str
+    description: str = ""
+    description_ar: str = ""
+    price_monthly: float
+    price_6months: float
+    price_yearly: float
+    features: dict = {}  # {"pos": True, "reports": True, "ai_tips": False, ...}
+    limits: dict = {}  # {"max_products": 100, "max_users": 5, "max_sales_per_month": 500}
+    is_active: bool = True
+    is_popular: bool = False
+    sort_order: int = 0
+
+class PlanUpdate(BaseModel):
+    name: Optional[str] = None
+    name_ar: Optional[str] = None
+    description: Optional[str] = None
+    description_ar: Optional[str] = None
+    price_monthly: Optional[float] = None
+    price_6months: Optional[float] = None
+    price_yearly: Optional[float] = None
+    features: Optional[dict] = None
+    limits: Optional[dict] = None
+    is_active: Optional[bool] = None
+    is_popular: Optional[bool] = None
+    sort_order: Optional[int] = None
+
+class PlanResponse(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str
+    name: str
+    name_ar: str
+    description: str = ""
+    description_ar: str = ""
+    price_monthly: float
+    price_6months: float
+    price_yearly: float
+    features: dict = {}
+    limits: dict = {}
+    is_active: bool = True
+    is_popular: bool = False
+    sort_order: int = 0
+    created_at: str = ""
+
+class TenantCreate(BaseModel):
+    name: str
+    email: str
+    phone: Optional[str] = ""
+    password: str
+    company_name: Optional[str] = ""
+    plan_id: str
+    agent_id: Optional[str] = None  # الوكيل المسؤول
+    subscription_type: str = "monthly"  # monthly, 6months, yearly
+    business_type: Optional[str] = "retailer"  # retailer, wholesaler, distributor
+    role: Optional[str] = "admin"  # admin, manager, seller, etc.
+    notes: Optional[str] = ""
+
+class TenantUpdate(BaseModel):
+    name: Optional[str] = None
+    email: Optional[str] = None
+    phone: Optional[str] = None
+    company_name: Optional[str] = None
+    is_active: Optional[bool] = None
+    plan_id: Optional[str] = None
+    agent_id: Optional[str] = None
+    features_override: Optional[dict] = None  # Override plan features
+    limits_override: Optional[dict] = None  # Override plan limits
+    notes: Optional[str] = None
+    business_type: Optional[str] = None
+
+class TenantResponse(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str
+    name: str
+    email: str
+    phone: str = ""
+    company_name: str = ""
+    plan_id: str
+    plan_name: Optional[str] = ""
+    agent_id: Optional[str] = None
+    agent_name: Optional[str] = ""
+    is_active: bool = True
+    is_trial: bool = False
+    trial_ends_at: Optional[str] = None
+    subscription_type: str = "monthly"
+    subscription_starts_at: str = ""
+    subscription_ends_at: str = ""
+    features_override: dict = {}
+    limits_override: dict = {}
+    notes: str = ""
+    stats: Optional[dict] = None
+    business_type: Optional[str] = "retailer"
+    database_initialized: bool = False
+    created_at: str = ""
+
+# ============ AGENT/RESELLER MODELS ============
+
+class AgentCreate(BaseModel):
+    name: str
+    email: str
+    password: str
+    phone: str
+    company_name: Optional[str] = ""
+    address: Optional[str] = ""
+    commission_percent: float = 10.0  # نسبة العمولة المئوية
+    commission_fixed: float = 0.0  # عمولة ثابتة لكل اشتراك
+    credit_limit: float = 100000.0  # حد الدين المسموح
+    notes: Optional[str] = ""
+
+class AgentUpdate(BaseModel):
+    name: Optional[str] = None
+    phone: Optional[str] = None
+    company_name: Optional[str] = None
+    address: Optional[str] = None
+    commission_percent: Optional[float] = None
+    commission_fixed: Optional[float] = None
+    credit_limit: Optional[float] = None
+    is_active: Optional[bool] = None
+    notes: Optional[str] = None
+
+class AgentResponse(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str
+    name: str
+    email: str
+    phone: str
+    company_name: str
+    address: str
+    commission_percent: float
+    commission_fixed: float
+    credit_limit: float
+    current_balance: float  # الرصيد الحالي (سالب = دين)
+    total_earnings: float  # إجمالي العمولات
+    is_active: bool
+    tenants_count: Optional[int] = 0
+    notes: str
+    created_at: str
+
+class AgentTransaction(BaseModel):
+    agent_id: str
+    amount: float
+    transaction_type: str  # payment, commission, subscription_sale, refund
+    description: str
+    reference_id: Optional[str] = ""  # مرجع (مثل tenant_id)
+    notes: Optional[str] = ""
+
+class AgentTransactionResponse(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str
+    agent_id: str
+    agent_name: Optional[str] = ""
+    amount: float
+    transaction_type: str
+    description: str
+    reference_id: str
+    balance_after: float
+    notes: str
+    created_by: str
+    created_at: str
+
+class SubscriptionPayment(BaseModel):
+    tenant_id: str
+    amount: float
+    payment_method: str  # manual, stripe, paypal
+    subscription_type: str  # monthly, 6months, yearly
+    notes: Optional[str] = ""
+    transaction_id: Optional[str] = ""
+
+class SubscriptionPaymentResponse(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str
+    tenant_id: str
+    tenant_name: Optional[str] = ""
+    amount: float
+    payment_method: str
+    subscription_type: str
+    period_start: str
+    period_end: str
+    notes: str
+    transaction_id: str
+    created_by: str
+    created_at: str
+
+# Default Permissions for each role
+DEFAULT_PERMISSIONS = {
+    "super_admin": {
+        "dashboard": True,
+        "pos": True,
+        "products": {"view": True, "add": True, "edit": True, "delete": True, "price_change": True, "stock_adjust": True},
+        "inventory": {"view": True, "add": True, "edit": True, "delete": True, "transfer": True, "count": True},
+        "purchases": {"view": True, "add": True, "edit": True, "delete": True, "approve": True},
+        "sales": {"view": True, "add": True, "edit": True, "delete": True, "refund": True, "discount": True},
+        "customers": {"view": True, "add": True, "edit": True, "delete": True, "credit": True, "blacklist": True},
+        "suppliers": {"view": True, "add": True, "edit": True, "delete": True, "payments": True},
+        "employees": {"view": True, "add": True, "edit": True, "delete": True, "salary": True, "attendance": True},
+        "debts": {"view": True, "add": True, "edit": True, "delete": True, "collect": True},
+        "expenses": {"view": True, "add": True, "edit": True, "delete": True, "approve": True},
+        "repairs": {"view": True, "add": True, "edit": True, "delete": True},
+        "reports": {"sales": True, "inventory": True, "financial": True, "customers": True, "employees": True, "advanced": True},
+        "settings": True,
+        "users": {"view": True, "add": True, "edit": True, "delete": True, "permissions": True},
+        "recharge": True,
+        "api_keys": True,
+        "factory_reset": True,
+        "woocommerce": True,
+        "delivery": True,
+        "loyalty": True,
+        "notifications": True,
+        "maintenance": True,
+        "saas_admin": True
+    },
+    "admin": {
+        "dashboard": True,
+        "pos": True,
+        "products": {"view": True, "add": True, "edit": True, "delete": True, "price_change": True, "stock_adjust": True},
+        "inventory": {"view": True, "add": True, "edit": True, "delete": True, "transfer": True, "count": True},
+        "purchases": {"view": True, "add": True, "edit": True, "delete": True, "approve": True},
+        "sales": {"view": True, "add": True, "edit": True, "delete": True, "refund": True, "discount": True},
+        "customers": {"view": True, "add": True, "edit": True, "delete": True, "credit": True, "blacklist": True},
+        "suppliers": {"view": True, "add": True, "edit": True, "delete": True, "payments": True},
+        "employees": {"view": True, "add": True, "edit": True, "delete": True, "salary": True, "attendance": True},
+        "debts": {"view": True, "add": True, "edit": True, "delete": True, "collect": True},
+        "expenses": {"view": True, "add": True, "edit": True, "delete": True, "approve": True},
+        "repairs": {"view": True, "add": True, "edit": True, "delete": True},
+        "reports": {"sales": True, "inventory": True, "financial": True, "customers": True, "employees": True, "advanced": True},
+        "settings": True,
+        "users": {"view": True, "add": True, "edit": True, "delete": True, "permissions": True},
+        "recharge": True,
+        "api_keys": True,
+        "factory_reset": True,
+        "woocommerce": True,
+        "delivery": True,
+        "loyalty": True,
+        "notifications": True,
+        "maintenance": True
+    },
+    "manager": {
+        "dashboard": True,
+        "pos": True,
+        "products": {"view": True, "add": True, "edit": True, "delete": False, "price_change": False, "stock_adjust": True},
+        "inventory": {"view": True, "add": True, "edit": True, "delete": False, "transfer": True, "count": True},
+        "purchases": {"view": True, "add": True, "edit": True, "delete": False, "approve": False},
+        "sales": {"view": True, "add": True, "edit": True, "delete": False, "refund": True, "discount": True},
+        "customers": {"view": True, "add": True, "edit": True, "delete": False, "credit": True, "blacklist": False},
+        "suppliers": {"view": True, "add": True, "edit": False, "delete": False, "payments": True},
+        "employees": {"view": True, "add": False, "edit": False, "delete": False, "salary": False, "attendance": True},
+        "debts": {"view": True, "add": True, "edit": True, "delete": False, "collect": True},
+        "expenses": {"view": True, "add": True, "edit": True, "delete": False, "approve": False},
+        "repairs": {"view": True, "add": True, "edit": True, "delete": False},
+        "reports": {"sales": True, "inventory": True, "financial": False, "customers": True, "employees": False, "advanced": False},
+        "settings": False,
+        "users": {"view": True, "add": False, "edit": False, "delete": False, "permissions": False},
+        "recharge": True,
+        "api_keys": False,
+        "factory_reset": False,
+        "woocommerce": False,
+        "delivery": True,
+        "loyalty": True,
+        "notifications": True,
+        "maintenance": False
+    },
+    "sales_supervisor": {
+        "dashboard": True,
+        "pos": True,
+        "products": {"view": True, "add": False, "edit": False, "delete": False, "price_change": False, "stock_adjust": False},
+        "inventory": {"view": True, "add": False, "edit": False, "delete": False, "transfer": False, "count": False},
+        "purchases": {"view": False, "add": False, "edit": False, "delete": False, "approve": False},
+        "sales": {"view": True, "add": True, "edit": True, "delete": False, "refund": True, "discount": True},
+        "customers": {"view": True, "add": True, "edit": True, "delete": False, "credit": True, "blacklist": False},
+        "suppliers": {"view": False, "add": False, "edit": False, "delete": False, "payments": False},
+        "employees": {"view": False, "add": False, "edit": False, "delete": False, "salary": False, "attendance": False},
+        "debts": {"view": True, "add": True, "edit": True, "delete": False, "collect": True},
+        "expenses": {"view": False, "add": False, "edit": False, "delete": False, "approve": False},
+        "repairs": {"view": True, "add": True, "edit": True, "delete": False},
+        "reports": {"sales": True, "inventory": False, "financial": False, "customers": True, "employees": False, "advanced": False},
+        "settings": False,
+        "users": {"view": False, "add": False, "edit": False, "delete": False, "permissions": False},
+        "recharge": True,
+        "api_keys": False,
+        "factory_reset": False,
+        "woocommerce": False,
+        "delivery": True,
+        "loyalty": False,
+        "notifications": True,
+        "maintenance": False
+    },
+    "seller": {
+        "dashboard": True,
+        "pos": True,
+        "products": {"view": True, "add": False, "edit": False, "delete": False, "price_change": False, "stock_adjust": False},
+        "inventory": {"view": True, "add": False, "edit": False, "delete": False, "transfer": False, "count": False},
+        "purchases": {"view": False, "add": False, "edit": False, "delete": False, "approve": False},
+        "sales": {"view": True, "add": True, "edit": False, "delete": False, "refund": False, "discount": False},
+        "customers": {"view": True, "add": True, "edit": False, "delete": False, "credit": False, "blacklist": False},
+        "suppliers": {"view": False, "add": False, "edit": False, "delete": False, "payments": False},
+        "employees": {"view": False, "add": False, "edit": False, "delete": False, "salary": False, "attendance": False},
+        "debts": {"view": True, "add": False, "edit": False, "delete": False, "collect": False},
+        "expenses": {"view": False, "add": False, "edit": False, "delete": False, "approve": False},
+        "repairs": {"view": True, "add": True, "edit": False, "delete": False},
+        "reports": {"sales": False, "inventory": False, "financial": False, "customers": False, "employees": False, "advanced": False},
+        "settings": False,
+        "users": {"view": False, "add": False, "edit": False, "delete": False, "permissions": False},
+        "recharge": True,
+        "api_keys": False,
+        "factory_reset": False,
+        "woocommerce": False,
+        "delivery": False,
+        "loyalty": False,
+        "notifications": False,
+        "maintenance": False
+    },
+    "inventory_manager": {
+        "dashboard": True,
+        "pos": False,
+        "products": {"view": True, "add": True, "edit": True, "delete": False, "price_change": False, "stock_adjust": True},
+        "inventory": {"view": True, "add": True, "edit": True, "delete": True, "transfer": True, "count": True},
+        "purchases": {"view": True, "add": True, "edit": True, "delete": False, "approve": False},
+        "sales": {"view": True, "add": False, "edit": False, "delete": False, "refund": False, "discount": False},
+        "customers": {"view": False, "add": False, "edit": False, "delete": False, "credit": False, "blacklist": False},
+        "suppliers": {"view": True, "add": True, "edit": True, "delete": False, "payments": False},
+        "employees": {"view": False, "add": False, "edit": False, "delete": False, "salary": False, "attendance": False},
+        "debts": {"view": False, "add": False, "edit": False, "delete": False, "collect": False},
+        "expenses": {"view": False, "add": False, "edit": False, "delete": False, "approve": False},
+        "repairs": {"view": True, "add": True, "edit": True, "delete": False},
+        "reports": {"sales": False, "inventory": True, "financial": False, "customers": False, "employees": False, "advanced": False},
+        "settings": False,
+        "users": {"view": False, "add": False, "edit": False, "delete": False, "permissions": False},
+        "recharge": False,
+        "api_keys": False,
+        "factory_reset": False,
+        "woocommerce": False,
+        "delivery": False,
+        "loyalty": False,
+        "notifications": True,
+        "maintenance": True
+    },
+    "ecommerce_manager": {
+        "dashboard": True,
+        "pos": False,
+        "products": {"view": True, "add": True, "edit": True, "delete": False, "price_change": True, "stock_adjust": False},
+        "inventory": {"view": True, "add": False, "edit": False, "delete": False, "transfer": False, "count": False},
+        "purchases": {"view": False, "add": False, "edit": False, "delete": False, "approve": False},
+        "sales": {"view": True, "add": False, "edit": False, "delete": False, "refund": False, "discount": False},
+        "customers": {"view": True, "add": True, "edit": True, "delete": False, "credit": False, "blacklist": False},
+        "suppliers": {"view": False, "add": False, "edit": False, "delete": False, "payments": False},
+        "employees": {"view": False, "add": False, "edit": False, "delete": False, "salary": False, "attendance": False},
+        "debts": {"view": True, "add": False, "edit": False, "delete": False, "collect": False},
+        "expenses": {"view": False, "add": False, "edit": False, "delete": False, "approve": False},
+        "repairs": {"view": False, "add": False, "edit": False, "delete": False},
+        "reports": {"sales": True, "inventory": True, "financial": False, "customers": True, "employees": False, "advanced": False},
+        "settings": False,
+        "users": {"view": False, "add": False, "edit": False, "delete": False, "permissions": False},
+        "recharge": False,
+        "api_keys": False,
+        "factory_reset": False,
+        "woocommerce": True,
+        "delivery": True,
+        "loyalty": True,
+        "notifications": True,
+        "maintenance": False
+    },
+    "accountant": {
+        "dashboard": True,
+        "pos": False,
+        "products": {"view": True, "add": False, "edit": False, "delete": False, "price_change": False, "stock_adjust": False},
+        "inventory": {"view": True, "add": False, "edit": False, "delete": False, "transfer": False, "count": False},
+        "purchases": {"view": True, "add": False, "edit": False, "delete": False, "approve": True},
+        "sales": {"view": True, "add": False, "edit": False, "delete": False, "refund": False, "discount": False},
+        "customers": {"view": True, "add": False, "edit": False, "delete": False, "credit": False, "blacklist": False},
+        "suppliers": {"view": True, "add": False, "edit": False, "delete": False, "payments": True},
+        "employees": {"view": True, "add": False, "edit": False, "delete": False, "salary": True, "attendance": False},
+        "debts": {"view": True, "add": True, "edit": True, "delete": False, "collect": True},
+        "expenses": {"view": True, "add": True, "edit": True, "delete": True, "approve": True},
+        "repairs": {"view": True, "add": False, "edit": False, "delete": False},
+        "reports": {"sales": True, "inventory": True, "financial": True, "customers": True, "employees": True, "advanced": True},
+        "settings": False,
+        "users": {"view": False, "add": False, "edit": False, "delete": False, "permissions": False},
+        "recharge": False,
+        "api_keys": False,
+        "factory_reset": False,
+        "woocommerce": False,
+        "delivery": False,
+        "loyalty": False,
+        "notifications": True,
+        "maintenance": False
+    },
+    "user": {
+        "dashboard": True,
+        "pos": False,
+        "products": {"view": True, "add": False, "edit": False, "delete": False, "price_change": False, "stock_adjust": False},
+        "inventory": {"view": False, "add": False, "edit": False, "delete": False, "transfer": False, "count": False},
+        "purchases": {"view": False, "add": False, "edit": False, "delete": False, "approve": False},
+        "sales": {"view": True, "add": False, "edit": False, "delete": False, "refund": False, "discount": False},
+        "customers": {"view": False, "add": False, "edit": False, "delete": False, "credit": False, "blacklist": False},
+        "suppliers": {"view": False, "add": False, "edit": False, "delete": False, "payments": False},
+        "employees": {"view": False, "add": False, "edit": False, "delete": False, "salary": False, "attendance": False},
+        "debts": {"view": False, "add": False, "edit": False, "delete": False, "collect": False},
+        "expenses": {"view": False, "add": False, "edit": False, "delete": False, "approve": False},
+        "repairs": {"view": False, "add": False, "edit": False, "delete": False},
+        "reports": {"sales": False, "inventory": False, "financial": False, "customers": False, "employees": False, "advanced": False},
+        "settings": False,
+        "users": {"view": False, "add": False, "edit": False, "delete": False, "permissions": False},
+        "recharge": False,
+        "api_keys": False,
+        "factory_reset": False,
+        "woocommerce": False,
+        "delivery": False,
+        "loyalty": False,
+        "notifications": False,
+        "maintenance": False
+    }
+}
+
+# Role descriptions for UI
+ROLE_DESCRIPTIONS = {
+    "super_admin": {"ar": "سوبر أدمين - صلاحيات كاملة على النظام بالكامل", "fr": "Super Admin - Full system access"},
+    "admin": {"ar": "مدير - صلاحيات كاملة على المتجر", "fr": "Admin - Full store access"},
+    "manager": {"ar": "مشرف - إدارة العمليات اليومية", "fr": "Manager - Daily operations management"},
+    "sales_supervisor": {"ar": "مشرف مبيعات - إشراف على المبيعات والعملاء", "fr": "Sales Supervisor - Sales and customer oversight"},
+    "seller": {"ar": "بائع - عمليات البيع الأساسية فقط", "fr": "Seller - Basic sales operations only"},
+    "inventory_manager": {"ar": "مدير مخزون - إدارة المخزون والمشتريات", "fr": "Inventory Manager - Stock and purchase management"},
+    "ecommerce_manager": {"ar": "مسؤول متجر إلكتروني - إدارة المتجر الإلكتروني", "fr": "E-commerce Manager - Online store management"},
+    "accountant": {"ar": "محاسب - التقارير المالية والديون والمصاريف", "fr": "Accountant - Financial reports, debts, and expenses"},
+    "user": {"ar": "مستخدم - عرض فقط", "fr": "User - View only"}
+}
+
+# Permission categories for UI grouping
+PERMISSION_CATEGORIES = {
+    "sales_operations": {
+        "ar": "عمليات المبيعات",
+        "fr": "Opérations de vente",
+        "permissions": ["pos", "sales", "customers", "debts"]
+    },
+    "inventory_operations": {
+        "ar": "عمليات المخزون",
+        "fr": "Opérations d'inventaire", 
+        "permissions": ["products", "inventory", "purchases", "suppliers"]
+    },
+    "hr_operations": {
+        "ar": "شؤون الموظفين",
+        "fr": "Ressources humaines",
+        "permissions": ["employees"]
+    },
+    "financial": {
+        "ar": "العمليات المالية",
+        "fr": "Opérations financières",
+        "permissions": ["expenses", "reports"]
+    },
+    "system": {
+        "ar": "إدارة النظام",
+        "fr": "Gestion système",
+        "permissions": ["settings", "users", "api_keys", "factory_reset"]
+    },
+    "services": {
+        "ar": "الخدمات",
+        "fr": "Services",
+        "permissions": ["woocommerce", "delivery", "loyalty", "notifications", "maintenance", "repairs", "recharge"]
+    }
+}
+
+class TokenResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    user: UserResponse
+
+# ============ PRODUCT MODELS ============
+
+class ProductCreate(BaseModel):
+    name_en: str  # اسم المنتج (إلزامي)
+    name_ar: Optional[str] = ""  # اسم عربي (اختياري)
+    description_en: Optional[str] = ""
+    description_ar: Optional[str] = ""
+    purchase_price: Optional[float] = 0  # سعر الشراء (اختياري)
+    wholesale_price: Optional[float] = 0  # سعر الجملة (اختياري)
+    retail_price: Optional[float] = 0  # سعر التجزئة (اختياري)
+    super_wholesale_price: Optional[float] = 0  # سعر سوبر الجملة
+    quantity: int = 0
+    image_url: Optional[str] = ""
+    compatible_models: List[str] = []
+    low_stock_threshold: int = 10
+    barcode: Optional[str] = ""
+    article_code: Optional[str] = ""  # كود المنتج AR00001
+    family_id: Optional[str] = None  # عائلة المنتج
+    use_average_price: Optional[bool] = False  # حساب السعر المتوسط
+    
+    @field_validator('name_en')
+    @classmethod
+    def validate_name_en(cls, v):
+        if not v or not v.strip():
+            raise ValueError('اسم المنتج مطلوب')
+        # Remove HTML tags
+        import re
+        v = re.sub(r'<[^>]+>', '', v)
+        v = v.strip()
+        if len(v) > 255:
+            raise ValueError('اسم المنتج يجب ألا يتجاوز 255 حرف')
+        if len(v) < 2:
+            raise ValueError('اسم المنتج يجب أن يكون حرفين على الأقل')
+        return v
+    
+    @field_validator('name_ar')
+    @classmethod
+    def validate_name_ar(cls, v):
+        if v:
+            import re
+            v = re.sub(r'<[^>]+>', '', v)
+            v = v.strip()
+            if len(v) > 255:
+                raise ValueError('الاسم العربي يجب ألا يتجاوز 255 حرف')
+        return v or ""
+    
+    @field_validator('purchase_price', 'wholesale_price', 'retail_price', 'super_wholesale_price')
+    @classmethod
+    def validate_prices(cls, v):
+        if v is not None and v < 0:
+            raise ValueError('السعر يجب أن يكون صفر أو أكثر')
+        return v or 0
+    
+    @field_validator('quantity', 'low_stock_threshold')
+    @classmethod
+    def validate_quantity(cls, v):
+        if v is not None and v < 0:
+            raise ValueError('الكمية يجب أن تكون صفر أو أكثر')
+        return v or 0
+
+class ProductUpdate(BaseModel):
+    name_en: Optional[str] = None
+    name_ar: Optional[str] = None
+    description_en: Optional[str] = None
+    description_ar: Optional[str] = None
+    purchase_price: Optional[float] = None
+    wholesale_price: Optional[float] = None
+    retail_price: Optional[float] = None
+    super_wholesale_price: Optional[float] = None
+    quantity: Optional[int] = None
+    image_url: Optional[str] = None
+    compatible_models: Optional[List[str]] = None
+    low_stock_threshold: Optional[int] = None
+    barcode: Optional[str] = None
+    article_code: Optional[str] = None  # كود المنتج
+    family_id: Optional[str] = None
+    use_average_price: Optional[bool] = None
+
+class ProductResponse(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str
+    name_en: str
+    name_ar: str = ""
+    description_en: str = ""
+    description_ar: str = ""
+    purchase_price: float = 0
+    wholesale_price: float = 0
+    retail_price: float = 0
+    super_wholesale_price: float = 0
+    quantity: int
+    image_url: str = ""
+    compatible_models: List[str] = []
+    low_stock_threshold: int = 10
+    barcode: str = ""
+    article_code: str = ""  # كود المنتج
+    family_id: str = ""
+    family_name: str = ""
+    use_average_price: bool = False
+    last_purchase_date: Optional[str] = None  # تاريخ آخر شراء
+    created_at: str = ""
+    updated_at: str = ""
+
+# ============ CUSTOMER MODELS ============
+
+class CustomerCreate(BaseModel):
+    name: str
+    phone: Optional[str] = ""
+    email: Optional[str] = ""
+    address: Optional[str] = ""
+    notes: Optional[str] = ""
+    family_id: Optional[str] = None
+    code: Optional[str] = ""  # كود الزبون CL00001
+    
+    @field_validator('name')
+    @classmethod
+    def validate_name(cls, v):
+        if not v or not v.strip():
+            raise ValueError('اسم الزبون مطلوب')
+        import re
+        v = re.sub(r'<[^>]+>', '', v)
+        v = v.strip()
+        if len(v) > 255:
+            raise ValueError('الاسم يجب ألا يتجاوز 255 حرف')
+        if len(v) < 2:
+            raise ValueError('الاسم يجب أن يكون حرفين على الأقل')
+        return v
+    
+    @field_validator('email')
+    @classmethod
+    def validate_email(cls, v):
+        if v and v.strip():
+            import re
+            v = v.strip()
+            if not re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', v):
+                raise ValueError('البريد الإلكتروني غير صالح')
+        return v or ""
+    
+    @field_validator('phone')
+    @classmethod
+    def validate_phone(cls, v):
+        if v:
+            v = v.strip()
+            if len(v) > 20:
+                raise ValueError('رقم الهاتف طويل جداً')
+        return v or ""
+
+class CustomerUpdate(BaseModel):
+    name: Optional[str] = None
+    phone: Optional[str] = None
+    email: Optional[str] = None
+    address: Optional[str] = None
+    notes: Optional[str] = None
+    family_id: Optional[str] = None
+    code: Optional[str] = None
+
+class CustomerResponse(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str
+    name: str
+    phone: str
+    email: str
+    address: str
+    notes: str
+    code: str = ""
+    family_id: str = ""
+    family_name: str = ""
+    total_purchases: float = 0
+    balance: float = 0  # رصيد الزبون (دين)
+    created_at: str
+
+# ============ SUPPLIER MODELS ============
+
+class SupplierCreate(BaseModel):
+    name: str
+    phone: Optional[str] = ""
+    email: Optional[str] = ""
+    address: Optional[str] = ""
+    notes: Optional[str] = ""
+    family_id: Optional[str] = None
+    code: Optional[str] = ""  # كود المورد FR00001
+    
+    @field_validator('name')
+    @classmethod
+    def validate_name(cls, v):
+        if not v or not v.strip():
+            raise ValueError('اسم المورد مطلوب')
+        import re
+        v = re.sub(r'<[^>]+>', '', v)
+        v = v.strip()
+        if len(v) > 255:
+            raise ValueError('الاسم يجب ألا يتجاوز 255 حرف')
+        return v
+
+class SupplierUpdate(BaseModel):
+    name: Optional[str] = None
+    phone: Optional[str] = None
+    email: Optional[str] = None
+    address: Optional[str] = None
+    notes: Optional[str] = None
+    family_id: Optional[str] = None
+    code: Optional[str] = None
+
+class SupplierResponse(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str
+    name: str
+    phone: str
+    email: str
+    address: str
+    notes: str
+    code: str = ""
+    family_id: str = ""
+    family_name: str = ""
+    total_purchases: float = 0
+    balance: float = 0  # رصيد المورد (دين لهم)
+    created_at: str
+
+# ============ SALE MODELS ============
+
+class SaleItem(BaseModel):
+    product_id: str
+    product_name: str
+    quantity: int
+    unit_price: float
+    discount: float = 0
+    total: float
+
+class DeliveryInfo(BaseModel):
+    enabled: bool = False
+    wilaya_code: Optional[str] = None
+    wilaya_name: Optional[str] = None
+    city: Optional[str] = None
+    address: Optional[str] = None
+    delivery_type: Literal["desk", "home"] = "desk"
+    fee: float = 0
+
+class SaleCreate(BaseModel):
+    customer_id: Optional[str] = None
+    items: List[SaleItem]
+    subtotal: float
+    discount: float = 0
+    total: float
+    paid_amount: float
+    payment_method: Literal["cash", "bank", "wallet"] = "cash"
+    payment_type: Literal["cash", "credit", "partial"] = "cash"  # نقدي أو دين أو جزئي
+    notes: Optional[str] = ""
+    delivery: Optional[DeliveryInfo] = None
+    code: Optional[str] = ""  # كود البيع BV00001
+
+class SaleResponse(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str
+    invoice_number: str
+    code: str = ""  # كود البيع
+    customer_id: Optional[str]
+    customer_name: str
+    items: List[SaleItem]
+    subtotal: float
+    discount: float
+    delivery_fee: float = 0
+    total: float
+    paid_amount: float
+    debt_amount: float = 0
+    remaining: float
+    payment_method: str
+    payment_type: str = "cash"
+    delivery: Optional[dict] = None
+    status: str  # paid, partial, unpaid
+    notes: str
+    created_at: str
+    created_by: str
+
+# ============ PURCHASE MODELS ============
+
+class PurchaseItem(BaseModel):
+    product_id: str
+    product_name: str
+    quantity: int
+    unit_price: float
+    total: float
+
+class PurchaseCreate(BaseModel):
+    supplier_id: str
+    items: List[PurchaseItem]
+    total: float
+    paid_amount: float
+    payment_method: Literal["cash", "bank", "wallet"] = "cash"
+    notes: Optional[str] = ""
+    code: Optional[str] = ""  # كود الشراء AC00001
+
+class PurchaseResponse(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str
+    invoice_number: str
+    code: str = ""  # كود الشراء
+    supplier_id: str
+    supplier_name: str
+    items: List[PurchaseItem]
+    total: float
+    paid_amount: float
+    remaining: float
+    payment_method: str
+    status: str
+    notes: str
+    created_at: str
+    created_by: str
+
+# ============ CASH BOX MODELS ============
+
+class CashBoxResponse(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str
+    name: str
+    name_fr: str = ""
+    type: str  # cash, bank, wallet
+    balance: float
+    updated_at: Optional[str] = None
+
+class TransactionCreate(BaseModel):
+    cash_box_id: str
+    type: Literal["income", "expense", "transfer"]
+    amount: float
+    description: str
+    reference_type: Optional[str] = None  # sale, purchase, manual
+    reference_id: Optional[str] = None
+
+class TransactionResponse(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str
+    cash_box_id: str
+    cash_box_name: str
+    type: str
+    amount: float
+    balance_after: float
+    description: str
+    reference_type: str
+    reference_id: str
+    created_at: str
+    created_by: str
+
+# ============ EMPLOYEE MODELS ============
+
+class EmployeeCreate(BaseModel):
+    name: str
+    phone: Optional[str] = ""
+    email: Optional[str] = ""
+    position: Optional[str] = ""
+    salary: float = 0
+    hire_date: Optional[str] = None
+    commission_rate: float = 0  # نسبة العمولة على المبيعات
+    max_discount_percent: float = 0  # حد الخصم المسموح
+    max_debt_amount: float = 0  # حد الدين المسموح
+
+class EmployeeAlertSettings(BaseModel):
+    employee_id: str
+    enable_discount_alert: bool = True
+    discount_threshold_percent: float = 80  # تنبيه عند الوصول لـ 80% من الحد
+    enable_debt_alert: bool = True
+    debt_threshold_percent: float = 80  # تنبيه عند الوصول لـ 80% من الحد
+
+# ============ WAREHOUSE MODELS ============
+
+class WarehouseCreate(BaseModel):
+    name: str
+    address: Optional[str] = ""
+    phone: Optional[str] = ""
+    manager: Optional[str] = ""
+    notes: Optional[str] = ""
+    is_main: bool = False
+
+class WarehouseUpdate(BaseModel):
+    name: Optional[str] = None
+    address: Optional[str] = None
+    phone: Optional[str] = None
+    manager: Optional[str] = None
+    notes: Optional[str] = None
+    is_main: Optional[bool] = None
+
+class WarehouseResponse(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str
+    name: str
+    address: str = ""
+    phone: str = ""
+    manager: str = ""
+    notes: str = ""
+    is_main: bool
+    created_at: str
+
+class StockTransferCreate(BaseModel):
+    from_warehouse: str
+    to_warehouse: str
+    product_id: str
+    quantity: int
+
+class StockTransferResponse(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str
+    from_warehouse: str
+    from_warehouse_name: str
+    to_warehouse: str
+    to_warehouse_name: str
+    product_id: str
+    product_name: str
+    quantity: int
+    created_at: str
+
+# ============ PRICE HISTORY MODELS ============
+
+class PriceHistoryResponse(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str
+    product_id: str
+    product_name: str
+    old_price: float
+    new_price: float
+    price_type: str  # purchase_price, wholesale_price, retail_price
+    change_percent: float
+    changed_by: str
+    changed_by_name: str
+    source: str  # manual, purchase, import
+    notes: Optional[str] = ""
+    created_at: str
+
+# ============ INVENTORY SESSION MODELS ============
+
+class InventorySessionCreate(BaseModel):
+    name: str
+    family_filter: Optional[str] = "all"
+    status: str = "active"
+    started_at: str
+    counted_items: dict = {}
+    code: Optional[str] = ""  # كود الجرد IN00001
+
+class InventorySessionUpdate(BaseModel):
+    name: Optional[str] = None
+    status: Optional[str] = None
+    completed_at: Optional[str] = None
+    applied_changes: Optional[bool] = None
+    counted_items: Optional[dict] = None
+    code: Optional[str] = None
+
+class InventorySessionResponse(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str
+    name: str
+    code: str = ""
+    family_filter: str
+    status: str
+    started_at: str
+    completed_at: Optional[str] = None
+    applied_changes: bool = False
+    counted_items: dict = {}
+
+class EmployeeUpdate(BaseModel):
+    name: Optional[str] = None
+    phone: Optional[str] = None
+    email: Optional[str] = None
+    position: Optional[str] = None
+    salary: Optional[float] = None
+    commission_rate: Optional[float] = None
+
+class EmployeeResponse(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str
+    name: str
+    phone: str
+    email: str
+    position: str
+    salary: float
+    hire_date: str
+    commission_rate: float
+    total_advances: float = 0
+    total_commission: float = 0
+    created_at: str
+
+class AttendanceCreate(BaseModel):
+    employee_id: str
+    date: str
+    status: Literal["present", "absent", "late", "leave"]
+    notes: Optional[str] = ""
+
+class AttendanceResponse(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str
+    employee_id: str
+    employee_name: str
+    date: str
+    status: str
+    notes: str
+
+class AdvanceCreate(BaseModel):
+    employee_id: str
+    amount: float
+    notes: Optional[str] = ""
+
+class AdvanceResponse(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str
+    employee_id: str
+    employee_name: str
+    amount: float
+    notes: str
+    created_at: str
+
+# ============ DEBT MODELS ============
+
+class DebtCreate(BaseModel):
+    type: Literal["receivable", "payable"]  # receivable = دين على زبون, payable = دين لمورد
+    party_type: Literal["customer", "supplier"]
+    party_id: str
+    amount: float
+    due_date: Optional[str] = None
+    notes: Optional[str] = ""
+    reference_type: Optional[str] = None  # sale, purchase
+    reference_id: Optional[str] = None
+
+class DebtPaymentCreate(BaseModel):
+    debt_id: str
+    amount: float
+    payment_method: Literal["cash", "bank", "wallet"] = "cash"
+    notes: Optional[str] = ""
+
+class DebtResponse(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str
+    type: str
+    party_type: str
+    party_id: str
+    party_name: str
+    original_amount: float
+    paid_amount: float
+    remaining_amount: float
+    due_date: str
+    status: str  # pending, partial, paid, overdue
+    notes: str
+    reference_type: str
+    reference_id: str
+    created_at: str
+
+class DebtPaymentResponse(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str
+    debt_id: str
+    amount: float
+    payment_method: str
+    notes: str
+    created_at: str
+    created_by: str
+
+# ============ API KEY MODELS ============
+
+class ApiKeyCreate(BaseModel):
+    name: str
+    type: Literal["internal", "external"]  # internal = للربط مع تطبيقات أخرى, external = خدمات خارجية
+    service: Optional[str] = ""  # woocommerce, stripe, etc
+    key_value: Optional[str] = ""
+    secret_value: Optional[str] = ""
+    endpoint_url: Optional[str] = ""
+    permissions: List[str] = ["read"]
+
+class ApiKeyResponse(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str
+    name: str
+    type: str
+    service: str
+    key_value: str
+    key_preview: str  # آخر 4 أحرف فقط
+    endpoint_url: str
+    permissions: List[str]
+    is_active: bool
+    last_used: str
+    created_at: str
+
+# ============ RECHARGE MODELS ============
+
+class RechargeCreate(BaseModel):
+    operator: Literal["mobilis", "djezzy", "ooredoo", "idoom"]
+    phone_number: str
+    amount: float
+    recharge_type: Literal["credit", "internet", "flexy"]  # credit=رصيد, internet=أنترنت, flexy=فليكسي
+    customer_id: Optional[str] = None
+    payment_method: Literal["cash", "bank", "wallet"] = "cash"
+    notes: Optional[str] = ""
+
+class RechargeResponse(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str
+    operator: str
+    phone_number: str
+    amount: float
+    recharge_type: str
+    cost: float  # سعر التكلفة
+    profit: float  # الربح
+    customer_id: str
+    customer_name: str
+    payment_method: str
+    status: str  # pending, completed, failed
+    ussd_code: str
+    notes: str
+    created_at: str
+    created_by: str
+
+# أكواد USSD وأسعار الشحن
+RECHARGE_CONFIG = {
+    "mobilis": {
+        "name": "موبيليس",
+        "name_en": "Mobilis",
+        "prefix": ["06", "05"],
+        "ussd": {
+            "credit": "*600*{code}#",
+            "internet": "*600*{code}#",
+            "balance": "*600#"
+        },
+        "amounts": [100, 200, 500, 1000, 2000, 5000],
+        "commission": 3  # نسبة العمولة %
+    },
+    "djezzy": {
+        "name": "جازي",
+        "name_en": "Djezzy",
+        "prefix": ["07"],
+        "ussd": {
+            "credit": "*720*{code}#",
+            "flexy": "*720*3*{phone}*{amount}#",
+            "balance": "*720#"
+        },
+        "amounts": [100, 200, 500, 1000, 2000, 5000],
+        "commission": 3
+    },
+    "ooredoo": {
+        "name": "أوريدو",
+        "name_en": "Ooredoo",
+        "prefix": ["05"],
+        "ussd": {
+            "credit": "*888*{code}#",
+            "internet": "*888*{code}#",
+            "balance": "*888#"
+        },
+        "amounts": [100, 200, 500, 1000, 2000, 5000],
+        "commission": 3
+    },
+    "idoom": {
+        "name": "إيدوم ADSL",
+        "name_en": "Idoom ADSL",
+        "prefix": ["0"],
+        "ussd": {
+            "internet": "الدفع عبر الموقع أو الوكالة",
+            "balance": "https://selfcare.algerietelecom.dz"
+        },
+        "amounts": [1000, 1500, 2000, 2500, 3000, 4000, 5000],
+        "commission": 2
+    }
+}
+
+# ============ PRODUCT FAMILY MODELS ============
+
+class ProductFamilyCreate(BaseModel):
+    name_en: str
+    name_ar: str
+    description_en: Optional[str] = ""
+    description_ar: Optional[str] = ""
+    parent_id: Optional[str] = None  # للعائلات الفرعية
+
+class ProductFamilyUpdate(BaseModel):
+    name_en: Optional[str] = None
+    name_ar: Optional[str] = None
+    description_en: Optional[str] = None
+    description_ar: Optional[str] = None
+    parent_id: Optional[str] = None
+
+class ProductFamilyResponse(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str
+    name_en: str = ""
+    name_ar: str = ""
+    description_en: str = ""
+    description_ar: str = ""
+    parent_id: str = ""
+    parent_name: str = ""
+    product_count: int = 0
+    created_at: str = ""
+
+# ============ OCR & OTHER MODELS ============
+
+class OCRRequest(BaseModel):
+    image_base64: str
+
+class OCRResponse(BaseModel):
+    extracted_models: List[str]
+    raw_text: str
+
+=== saas_routes.py ===
+"""
+SaaS Routes - Complete Multi-tenant Management
+Extracted from server.py for better code organization
+Contains: Plans, Tenants, Agents, Databases, Registration
+"""
+from fastapi import APIRouter, HTTPException, Depends, Query, Body
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.responses import StreamingResponse
+from typing import List, Optional
+from datetime import datetime, timezone, timedelta
+from pydantic import BaseModel, Field, EmailStr
+import uuid
+import jwt
+import bcrypt
+import logging
+import io
+import json
+import os
+
+logger = logging.getLogger(__name__)
+
+# Database imports
+from config.database import db, main_db, client, get_tenant_db, init_tenant_database
+
+# JWT Settings - Use same key as main server
+SECRET_KEY = os.environ.get('JWT_SECRET_KEY', 'nt_commerce_super_secure_jwt_secret_key_2024_v3_hardened')
+ALGORITHM = "HS256"
+
+security = HTTPBearer()
+
+# Create router with prefix
+router = APIRouter(tags=["SaaS Admin"])
+
+# ============ PYDANTIC MODELS ============
+
+class PlanFeatures(BaseModel):
+    max_products: int = 100
+    max_users: int = 3
+    max_warehouses: int = 1
+    has_pos: bool = True
+    has_inventory: bool = True
+    has_reports: bool = True
+    has_multi_warehouse: bool = False
+    has_api_access: bool = False
+    has_ecommerce: bool = False
+    has_woocommerce: bool = False
+    has_advanced_reports: bool = False
+    has_employee_management: bool = False
+    has_debt_management: bool = True
+    has_customer_loyalty: bool = False
+    has_supplier_management: bool = True
+    has_email_notifications: bool = False
+    has_sms_notifications: bool = False
+
+class PlanCreate(BaseModel):
+    name: str
+    name_ar: str = ""
+    description: str = ""
+    description_ar: str = ""
+    monthly_price: float = 0
+    yearly_price: float = 0
+    six_month_price: float = 0
+    features: PlanFeatures = Field(default_factory=PlanFeatures)
+    is_active: bool = True
+    sort_order: int = 0
+    is_popular: bool = False
+    badge: str = ""
+    badge_ar: str = ""
+
+class PlanUpdate(BaseModel):
+    name: Optional[str] = None
+    name_ar: Optional[str] = None
+    description: Optional[str] = None
+    description_ar: Optional[str] = None
+    monthly_price: Optional[float] = None
+    yearly_price: Optional[float] = None
+    six_month_price: Optional[float] = None
+    features: Optional[PlanFeatures] = None
+    is_active: Optional[bool] = None
+    sort_order: Optional[int] = None
+    is_popular: Optional[bool] = None
+    badge: Optional[str] = None
+    badge_ar: Optional[str] = None
+
+class PlanResponse(BaseModel):
+    id: str
+    name: str
+    name_ar: str = ""
+    description: str = ""
+    description_ar: str = ""
+    monthly_price: float = 0
+    yearly_price: float = 0
+    six_month_price: float = 0
+    features: dict = {}
+    is_active: bool = True
+    sort_order: int = 0
+    is_popular: bool = False
+    badge: str = ""
+    badge_ar: str = ""
+    created_at: Optional[str] = None
+
+class TenantStats(BaseModel):
+    products: int = 0
+    users: int = 0
+    sales: int = 0
+
+class TenantCreate(BaseModel):
+    name: str
+    email: str
+    password: str
+    phone: str = ""
+    company_name: str = ""
+    plan_id: str
+    subscription_type: str = "monthly"
+    agent_id: Optional[str] = None
+    business_type: str = "retailer"
+    role: str = "admin"
+
+class TenantUpdate(BaseModel):
+    name: Optional[str] = None
+    email: Optional[str] = None
+    phone: Optional[str] = None
+    company_name: Optional[str] = None
+    plan_id: Optional[str] = None
+    is_active: Optional[bool] = None
+    notes: Optional[str] = None
+    features_override: Optional[dict] = None
+    limits_override: Optional[dict] = None
+
+class TenantResponse(BaseModel):
+    id: str
+    name: str
+    email: str
+    phone: str = ""
+    company_name: str = ""
+    plan_id: Optional[str] = None
+    plan_name: str = ""
+    agent_id: Optional[str] = None
+    agent_name: str = ""
+    is_active: bool = True
+    is_trial: bool = False
+    trial_ends_at: Optional[str] = None
+    subscription_type: str = "monthly"
+    subscription_starts_at: Optional[str] = None
+    subscription_ends_at: Optional[str] = None
+    features_override: dict = {}
+    limits_override: dict = {}
+    notes: str = ""
+    stats: TenantStats = Field(default_factory=TenantStats)
+    business_type: str = "retailer"
+    database_initialized: bool = False
+    created_at: Optional[str] = None
+
+    class Config:
+        from_attributes = True
+
+class SubscriptionPayment(BaseModel):
+    amount: float
+    payment_method: str = "cash"
+    subscription_type: str = "monthly"
+    notes: str = ""
+    transaction_id: str = ""
+
+class SubscriptionPaymentResponse(BaseModel):
+    id: str
+    tenant_id: str
+    tenant_name: str = ""
+    amount: float
+    payment_method: str = "cash"
+    subscription_type: str = "monthly"
+    period_start: Optional[str] = None
+    period_end: Optional[str] = None
+    notes: str = ""
+    transaction_id: str = ""
+    created_by: str = ""
+    created_at: Optional[str] = None
+
+class AgentCreate(BaseModel):
+    name: str
+    email: str
+    password: str
+    phone: str = ""
+    commission_rate: float = 10.0
+    notes: str = ""
+    is_active: bool = True
+
+class AgentUpdate(BaseModel):
+    name: Optional[str] = None
+    email: Optional[str] = None
+    phone: Optional[str] = None
+    commission_rate: Optional[float] = None
+    notes: Optional[str] = None
+    is_active: Optional[bool] = None
+
+class AgentResponse(BaseModel):
+    id: str
+    name: str
+    email: str
+    phone: str = ""
+    commission_rate: float = 10.0
+    total_earnings: float = 0
+    pending_earnings: float = 0
+    paid_earnings: float = 0
+    tenants_count: int = 0
+    notes: str = ""
+    is_active: bool = True
+    created_at: Optional[str] = None
+
+class AgentTransactionCreate(BaseModel):
+    type: str  # "commission" or "payout"
+    amount: float
+    tenant_id: Optional[str] = None
+    notes: str = ""
+
+class AgentTransactionResponse(BaseModel):
+    id: str
+    agent_id: str
+    type: str
+    amount: float
+    tenant_id: Optional[str] = None
+    tenant_name: str = ""
+    notes: str = ""
+    created_at: Optional[str] = None
+
+class AgentLoginRequest(BaseModel):
+    email: str
+    password: str
+
+# ============ HELPER FUNCTIONS ============
+
+def create_access_token(data: dict) -> str:
+    """Create JWT access token"""
+    to_encode = data.copy()
+    expire = datetime.now(timezone.utc) + timedelta(days=30)
+    to_encode.update({"exp": expire})
+    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+
+async def get_super_admin(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    """Check if user is super admin"""
+    token = credentials.credentials
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        user_id = payload.get("sub")
+        user = await main_db.users.find_one({"id": user_id})
+        if not user or user.get("role") not in ["super_admin", "saas_admin"]:
+            raise HTTPException(status_code=403, detail="Super admin access required")
+        return user
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Token expired")
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+async def get_current_user_optional(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    """Get current user (optional auth)"""
+    token = credentials.credentials
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        return payload
+    except:
+        return None
+
+
+# ============ PLANS ROUTES ============
+
+@router.get("/saas/plans", response_model=List[PlanResponse])
+async def get_plans(include_inactive: bool = False):
+    """Get all subscription plans (public)"""
+    query = {} if include_inactive else {"is_active": True}
+    plans = await db.saas_plans.find(query, {"_id": 0}).sort("sort_order", 1).to_list(100)
+    return [PlanResponse(**p) for p in plans]
+
+@router.get("/saas/plans/public")
+async def get_public_plans():
+    """Get active plans for public pricing page - no auth required"""
+    plans = await db.saas_plans.find({"is_active": True}, {"_id": 0}).sort("sort_order", 1).to_list(100)
+    return plans
+
+@router.get("/saas/plans/{plan_id}", response_model=PlanResponse)
+async def get_plan(plan_id: str):
+    """Get a specific plan"""
+    plan = await db.saas_plans.find_one({"id": plan_id}, {"_id": 0})
+    if not plan:
+        raise HTTPException(status_code=404, detail="Plan not found")
+    return PlanResponse(**plan)
+
+@router.post("/saas/plans", response_model=PlanResponse)
+async def create_plan(plan: PlanCreate, admin: dict = Depends(get_super_admin)):
+    """Create a new subscription plan"""
+    plan_doc = {
+        "id": str(uuid.uuid4()),
+        **plan.model_dump(),
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.saas_plans.insert_one(plan_doc)
+    return PlanResponse(**{k: v for k, v in plan_doc.items() if k != "_id"})
+
+@router.put("/saas/plans/{plan_id}", response_model=PlanResponse)
+async def update_plan(plan_id: str, updates: PlanUpdate, admin: dict = Depends(get_super_admin)):
+    """Update a subscription plan"""
+    plan = await db.saas_plans.find_one({"id": plan_id})
+    if not plan:
+        raise HTTPException(status_code=404, detail="Plan not found")
+    
+    update_data = {k: v for k, v in updates.model_dump().items() if v is not None}
+    update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
+    
+    await db.saas_plans.update_one({"id": plan_id}, {"$set": update_data})
+    updated = await db.saas_plans.find_one({"id": plan_id}, {"_id": 0})
+    return PlanResponse(**updated)
+
+@router.delete("/saas/plans/{plan_id}")
+async def delete_plan(plan_id: str, admin: dict = Depends(get_super_admin)):
+    """Delete a subscription plan"""
+    result = await db.saas_plans.delete_one({"id": plan_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Plan not found")
+    return {"message": "Plan deleted successfully"}
+
+
+# ============ TENANTS ROUTES ============
+
+@router.get("/saas/tenants", response_model=List[TenantResponse])
+async def get_tenants(admin: dict = Depends(get_super_admin)):
+    """Get all tenants"""
+    tenants = await db.saas_tenants.find({}, {"_id": 0}).sort("created_at", -1).to_list(1000)
+    
+    agents_list = await db.saas_agents.find({}, {"_id": 0, "id": 1, "name": 1}).to_list(1000)
+    agents_map = {a["id"]: a["name"] for a in agents_list}
+    
+    for tenant in tenants:
+        plan = await db.saas_plans.find_one({"id": tenant.get("plan_id")}, {"_id": 0, "name": 1, "name_ar": 1})
+        tenant["plan_name"] = plan.get("name_ar", "") if plan else ""
+        agent_id = tenant.get("agent_id")
+        tenant["agent_name"] = agents_map.get(agent_id, "") if agent_id else ""
+        
+        tenant_db = client[f"tenant_{tenant['id'].replace('-', '_')}"]
+        products_count = await tenant_db.products.count_documents({})
+        users_count = await tenant_db.users.count_documents({})
+        sales_count = await tenant_db.sales.count_documents({})
+        tenant["stats"] = {"products": products_count, "users": users_count, "sales": sales_count}
+    
+    return [TenantResponse(**t) for t in tenants]
+
+@router.get("/saas/tenants/{tenant_id}", response_model=TenantResponse)
+async def get_tenant(tenant_id: str, admin: dict = Depends(get_super_admin)):
+    """Get a specific tenant"""
+    tenant = await db.saas_tenants.find_one({"id": tenant_id}, {"_id": 0})
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+    
+    plan = await db.saas_plans.find_one({"id": tenant.get("plan_id")}, {"_id": 0, "name_ar": 1})
+    tenant["plan_name"] = plan.get("name_ar", "") if plan else ""
+    
+    tenant_db = client[f"tenant_{tenant['id'].replace('-', '_')}"]
+    products_count = await tenant_db.products.count_documents({})
+    users_count = await tenant_db.users.count_documents({})
+    sales_count = await tenant_db.sales.count_documents({})
+    tenant["stats"] = {"products": products_count, "users": users_count, "sales": sales_count}
+    
+    return TenantResponse(**tenant)
+
+@router.post("/saas/impersonate/{tenant_id}")
+async def impersonate_tenant(tenant_id: str, admin: dict = Depends(get_super_admin)):
+    """Generate a login token to impersonate a tenant"""
+    tenant = await main_db.saas_tenants.find_one({"id": tenant_id}, {"_id": 0})
+    if not tenant:
+        raise HTTPException(status_code=404, detail="المشترك غير موجود")
+    
+    if not tenant.get("is_active"):
+        raise HTTPException(status_code=400, detail="حساب المشترك معطل")
+    
+    access_token = create_access_token({
+        "sub": tenant_id,
+        "email": tenant["email"],
+        "role": "admin",
+        "type": "tenant",
+        "tenant_id": tenant_id
+    })
+    
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "email": tenant["email"],
+        "name": tenant.get("name", ""),
+        "company_name": tenant.get("company_name", ""),
+        "tenant_id": tenant_id,
+        "user_type": "tenant",
+        "user": {
+            "id": tenant_id,
+            "email": tenant["email"],
+            "name": tenant.get("name", ""),
+            "role": "admin",
+            "tenant_id": tenant_id,
+            "company_name": tenant.get("company_name", ""),
+            "database_name": tenant.get("database_name", "")
+        }
+    }
+
+@router.post("/saas/tenants", response_model=TenantResponse)
+async def create_tenant(tenant: TenantCreate, admin: dict = Depends(get_super_admin)):
+    """Create a new tenant"""
+    existing = await db.saas_tenants.find_one({"email": tenant.email})
+    if existing:
+        raise HTTPException(status_code=400, detail="البريد الإلكتروني مستخدم بالفعل")
+    
+    plan = await db.saas_plans.find_one({"id": tenant.plan_id}, {"_id": 0})
+    if not plan:
+        raise HTTPException(status_code=404, detail="الخطة غير موجودة")
+    
+    now = datetime.now(timezone.utc)
+    if tenant.subscription_type == "monthly":
+        ends_at = now + timedelta(days=30)
+    elif tenant.subscription_type == "6months":
+        ends_at = now + timedelta(days=180)
+    else:
+        ends_at = now + timedelta(days=365)
+    
+    tenant_id = str(uuid.uuid4())
+    hashed_password = bcrypt.hashpw(tenant.password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+    
+    tenant_doc = {
+        "id": tenant_id,
+        "name": tenant.name,
+        "email": tenant.email,
+        "phone": tenant.phone or "",
+        "company_name": tenant.company_name or "",
+        "password": hashed_password,
+        "plan_id": tenant.plan_id,
+        "agent_id": tenant.agent_id if hasattr(tenant, 'agent_id') else None,
+        "is_active": True,
+        "is_trial": False,
+        "trial_ends_at": None,
+        "subscription_type": tenant.subscription_type,
+        "subscription_starts_at": now.isoformat(),
+        "subscription_ends_at": ends_at.isoformat(),
+        "features_override": {},
+        "limits_override": {},
+        "notes": "",
+        "business_type": tenant.business_type if hasattr(tenant, 'business_type') else "retailer",
+        "database_initialized": False,
+        "created_at": now.isoformat()
+    }
+    
+    await db.saas_tenants.insert_one(tenant_doc)
+    await init_tenant_database(tenant_id)
+    await db.saas_tenants.update_one({"id": tenant_id}, {"$set": {"database_initialized": True}})
+    
+    tenant_doc["plan_name"] = plan.get("name_ar", "")
+    tenant_doc["agent_name"] = ""
+    tenant_doc["stats"] = {"products": 0, "users": 1, "sales": 0}
+    tenant_doc["database_initialized"] = True
+    
+    return TenantResponse(**{k: v for k, v in tenant_doc.items() if k not in ["_id", "password"]})
+
+@router.put("/saas/tenants/{tenant_id}", response_model=TenantResponse)
+async def update_tenant(tenant_id: str, updates: TenantUpdate, admin: dict = Depends(get_super_admin)):
+    """Update a tenant"""
+    tenant = await db.saas_tenants.find_one({"id": tenant_id})
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+    
+    update_data = {k: v for k, v in updates.model_dump().items() if v is not None}
+    update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
+    
+    await db.saas_tenants.update_one({"id": tenant_id}, {"$set": update_data})
+    updated = await db.saas_tenants.find_one({"id": tenant_id}, {"_id": 0})
+    
+    plan = await db.saas_plans.find_one({"id": updated.get("plan_id")}, {"_id": 0, "name_ar": 1})
+    updated["plan_name"] = plan.get("name_ar", "") if plan else ""
+    updated["agent_name"] = ""
+    updated["stats"] = {"products": 0, "users": 0, "sales": 0}
+    
+    return TenantResponse(**{k: v for k, v in updated.items() if k != "password"})
+
+@router.delete("/saas/tenants/{tenant_id}")
+async def delete_tenant(tenant_id: str, admin: dict = Depends(get_super_admin)):
+    """Delete a tenant"""
+    result = await db.saas_tenants.delete_one({"id": tenant_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+    return {"message": "Tenant deleted successfully"}
+
+@router.post("/saas/tenants/{tenant_id}/toggle-status")
+async def toggle_tenant_status(tenant_id: str, admin: dict = Depends(get_super_admin)):
+    """Toggle tenant active status"""
+    tenant = await db.saas_tenants.find_one({"id": tenant_id})
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+    
+    new_status = not tenant.get("is_active", True)
+    await db.saas_tenants.update_one({"id": tenant_id}, {"$set": {"is_active": new_status}})
+    return {"is_active": new_status}
+
+@router.post("/saas/tenants/{tenant_id}/extend-subscription")
+async def extend_subscription(tenant_id: str, payment: SubscriptionPayment, admin: dict = Depends(get_super_admin)):
+    """Extend tenant subscription"""
+    tenant = await db.saas_tenants.find_one({"id": tenant_id})
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+    
+    current_end = datetime.fromisoformat(tenant.get("subscription_ends_at", datetime.now(timezone.utc).isoformat()).replace('Z', '+00:00'))
+    now = datetime.now(timezone.utc)
+    start_date = max(current_end, now)
+    
+    if payment.subscription_type == "monthly":
+        new_end = start_date + timedelta(days=30)
+    elif payment.subscription_type == "6months":
+        new_end = start_date + timedelta(days=180)
+    else:
+        new_end = start_date + timedelta(days=365)
+    
+    await db.saas_tenants.update_one({"id": tenant_id}, {"$set": {
+        "subscription_type": payment.subscription_type,
+        "subscription_ends_at": new_end.isoformat(),
+        "is_active": True,
+        "is_trial": False
+    }})
+    
+    payment_doc = {
+        "id": str(uuid.uuid4()),
+        "tenant_id": tenant_id,
+        "tenant_name": tenant.get("name", ""),
+        "amount": payment.amount,
+        "payment_method": payment.payment_method,
+        "subscription_type": payment.subscription_type,
+        "period_start": start_date.isoformat(),
+        "period_end": new_end.isoformat(),
+        "notes": payment.notes or "",
+        "transaction_id": payment.transaction_id or "",
+        "created_by": admin.get("id", ""),
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.saas_payments.insert_one(payment_doc)
+    
+    return {"new_subscription_ends_at": new_end.isoformat()}
+
+
+# ============ MONITORING & STATS ROUTES ============
+
+@router.get("/saas/monitoring")
+async def get_monitoring_data(admin: dict = Depends(get_super_admin)):
+    """Get monitoring data for all tenants"""
+    tenants = await db.saas_tenants.find({}, {"_id": 0}).to_list(1000)
+    monitoring_data = []
+    
+    for tenant in tenants:
+        tenant_db = client[f"tenant_{tenant['id'].replace('-', '_')}"]
+        products_count = await tenant_db.products.count_documents({})
+        customers_count = await tenant_db.customers.count_documents({})
+        sales_count = await tenant_db.sales.count_documents({})
+        
+        monitoring_data.append({
+            "tenant_id": tenant["id"],
+            "name": tenant.get("name", ""),
+            "email": tenant.get("email", ""),
+            "company_name": tenant.get("company_name", ""),
+            "is_active": tenant.get("is_active", True),
+            "products_count": products_count,
+            "customers_count": customers_count,
+            "sales_count": sales_count,
+            "subscription_ends_at": tenant.get("subscription_ends_at", ""),
+            "created_at": tenant.get("created_at", "")
+        })
+    
+    total_products = sum(t["products_count"] for t in monitoring_data)
+    total_customers = sum(t["customers_count"] for t in monitoring_data)
+    total_sales = sum(t["sales_count"] for t in monitoring_data)
+    
+    return {
+        "tenants": monitoring_data,
+        "totals": {
+            "products": total_products,
+            "customers": total_customers,
+            "sales": total_sales
+        }
+    }
+
+@router.get("/saas/payments", response_model=List[SubscriptionPaymentResponse])
+async def get_payments(
+    limit: int = 100,
+    skip: int = 0,
+    tenant_id: Optional[str] = None,
+    admin: dict = Depends(get_super_admin)
+):
+    """Get subscription payments"""
+    query = {"tenant_id": tenant_id} if tenant_id else {}
+    payments = await db.saas_payments.find(query, {"_id": 0}).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
+    return [SubscriptionPaymentResponse(**p) for p in payments]
+
+@router.get("/saas/finance-reports")
+async def get_finance_reports(admin: dict = Depends(get_super_admin)):
+    """Get financial reports"""
+    now = datetime.now(timezone.utc)
+    start_of_month = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    start_of_year = now.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
+    
+    monthly_revenue = 0
+    yearly_revenue = 0
+    
+    async for payment in db.saas_payments.find({"created_at": {"$gte": start_of_month.isoformat()}}, {"_id": 0}):
+        monthly_revenue += payment.get("amount", 0)
+    
+    async for payment in db.saas_payments.find({"created_at": {"$gte": start_of_year.isoformat()}}, {"_id": 0}):
+        yearly_revenue += payment.get("amount", 0)
+    
+    return {
+        "monthly_revenue": monthly_revenue,
+        "yearly_revenue": yearly_revenue,
+        "currency": "دج"
+    }
+
+@router.get("/saas/stats")
+async def get_saas_stats(admin: dict = Depends(get_super_admin)):
+    """Get SaaS statistics"""
+    now = datetime.now(timezone.utc)
+    
+    total_tenants = await db.saas_tenants.count_documents({})
+    active_tenants = await db.saas_tenants.count_documents({"is_active": True})
+    trial_tenants = await db.saas_tenants.count_documents({"is_trial": True})
+    
+    seven_days_later = now + timedelta(days=7)
+    expiring_soon = await db.saas_tenants.count_documents({
+        "is_active": True,
+        "subscription_ends_at": {"$lte": seven_days_later.isoformat()}
+    })
+    
+    start_of_month = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    
+    monthly_revenue_cursor = db.saas_payments.aggregate([
+        {"$match": {"created_at": {"$gte": start_of_month.isoformat()}}},
+        {"$group": {"_id": None, "total": {"$sum": "$amount"}}}
+    ])
+    monthly_revenue_result = await monthly_revenue_cursor.to_list(1)
+    monthly_revenue = monthly_revenue_result[0]["total"] if monthly_revenue_result else 0
+    
+    total_revenue_cursor = db.saas_payments.aggregate([
+        {"$group": {"_id": None, "total": {"$sum": "$amount"}}}
+    ])
+    total_revenue_result = await total_revenue_cursor.to_list(1)
+    total_revenue = total_revenue_result[0]["total"] if total_revenue_result else 0
+    
+    plans = await db.saas_plans.find({}, {"_id": 0, "id": 1, "name_ar": 1}).to_list(100)
+    plans_distribution = {}
+    for plan in plans:
+        count = await db.saas_tenants.count_documents({"plan_id": plan["id"]})
+        plans_distribution[plan.get("name_ar", plan["id"])] = count
+    
+    return {
+        "total_tenants": total_tenants,
+        "active_tenants": active_tenants,
+        "trial_tenants": trial_tenants,
+        "expiring_soon": expiring_soon,
+        "monthly_revenue": monthly_revenue,
+        "total_revenue": total_revenue,
+        "plans_distribution": plans_distribution
+    }
+
+@router.get("/saas/stats-extended")
+async def get_stats_extended(admin: dict = Depends(get_super_admin)):
+    """Get extended statistics"""
+    now = datetime.now(timezone.utc)
+    
+    total_tenants = await db.saas_tenants.count_documents({})
+    active_tenants = await db.saas_tenants.count_documents({"is_active": True})
+    total_agents = await db.saas_agents.count_documents({})
+    
+    seven_days_later = now + timedelta(days=7)
+    expiring_soon = await db.saas_tenants.count_documents({
+        "is_active": True,
+        "subscription_ends_at": {"$lte": seven_days_later.isoformat()}
+    })
+    
+    start_of_month = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    
+    revenue_cursor = db.saas_payments.aggregate([
+        {"$match": {"created_at": {"$gte": start_of_month.isoformat()}}},
+        {"$group": {"_id": None, "total": {"$sum": "$amount"}}}
+    ])
+    revenue_result = await revenue_cursor.to_list(1)
+    monthly_revenue = revenue_result[0]["total"] if revenue_result else 0
+    
+    return {
+        "total_tenants": total_tenants,
+        "active_tenants": active_tenants,
+        "total_agents": total_agents,
+        "expiring_soon": expiring_soon,
+        "monthly_revenue": monthly_revenue
+    }
+
+
+# ============ AGENTS/RESELLERS ROUTES ============
+
+@router.get("/saas/agents", response_model=List[AgentResponse])
+async def get_agents(admin: dict = Depends(get_super_admin)):
+    """Get all agents"""
+    agents = await db.saas_agents.find({}, {"_id": 0}).sort("created_at", -1).to_list(1000)
+    result = []
+    for agent in agents:
+        tenants_count = await db.saas_tenants.count_documents({"agent_id": agent["id"]})
+        agent_data = {k: v for k, v in agent.items() if k != "password"}
+        agent_data["tenants_count"] = tenants_count
+        result.append(AgentResponse(**agent_data))
+    return result
+
+@router.get("/saas/agents/{agent_id}", response_model=AgentResponse)
+async def get_agent(agent_id: str, admin: dict = Depends(get_super_admin)):
+    """Get a specific agent"""
+    agent = await db.saas_agents.find_one({"id": agent_id}, {"_id": 0})
+    if not agent:
+        raise HTTPException(status_code=404, detail="Agent not found")
+    tenants_count = await db.saas_tenants.count_documents({"agent_id": agent_id})
+    agent_data = {k: v for k, v in agent.items() if k != "password"}
+    agent_data["tenants_count"] = tenants_count
+    return AgentResponse(**agent_data)
+
+@router.post("/saas/agents", response_model=AgentResponse)
+async def create_agent(agent: AgentCreate, admin: dict = Depends(get_super_admin)):
+    """Create a new agent"""
+    existing = await db.saas_agents.find_one({"email": agent.email})
+    if existing:
+        raise HTTPException(status_code=400, detail="البريد الإلكتروني مستخدم بالفعل")
+    
+    hashed_password = bcrypt.hashpw(agent.password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+    
+    agent_doc = {
+        "id": str(uuid.uuid4()),
+        "name": agent.name,
+        "email": agent.email,
+        "password": hashed_password,
+        "phone": agent.phone or "",
+        "commission_rate": agent.commission_rate,
+        "total_earnings": 0,
+        "pending_earnings": 0,
+        "paid_earnings": 0,
+        "notes": agent.notes or "",
+        "is_active": agent.is_active,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.saas_agents.insert_one(agent_doc)
+    return AgentResponse(**{k: v for k, v in agent_doc.items() if k not in ["_id", "password"]}, tenants_count=0)
+
+@router.put("/saas/agents/{agent_id}", response_model=AgentResponse)
+async def update_agent(agent_id: str, updates: AgentUpdate, admin: dict = Depends(get_super_admin)):
+    """Update an agent"""
+    agent = await db.saas_agents.find_one({"id": agent_id})
+    if not agent:
+        raise HTTPException(status_code=404, detail="Agent not found")
+    
+    update_data = {k: v for k, v in updates.model_dump().items() if v is not None}
+    update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
+    
+    await db.saas_agents.update_one({"id": agent_id}, {"$set": update_data})
+    updated = await db.saas_agents.find_one({"id": agent_id}, {"_id": 0})
+    tenants_count = await db.saas_tenants.count_documents({"agent_id": agent_id})
+    
+    return AgentResponse(**{k: v for k, v in updated.items() if k != "password"}, tenants_count=tenants_count)
+
+@router.delete("/saas/agents/{agent_id}")
+async def delete_agent(agent_id: str, admin: dict = Depends(get_super_admin)):
+    """Delete an agent"""
+    result = await db.saas_agents.delete_one({"id": agent_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Agent not found")
+    return {"message": "Agent deleted successfully"}
+
+@router.get("/saas/agents/{agent_id}/transactions")
+async def get_agent_transactions(agent_id: str, admin: dict = Depends(get_super_admin)):
+    """Get agent transactions"""
+    transactions = await db.saas_agent_transactions.find({"agent_id": agent_id}, {"_id": 0}).sort("created_at", -1).to_list(100)
+    return transactions
+
+@router.post("/saas/agents/{agent_id}/transactions", response_model=AgentTransactionResponse)
+async def create_agent_transaction(agent_id: str, transaction: AgentTransactionCreate, admin: dict = Depends(get_super_admin)):
+    """Create agent transaction"""
+    agent = await db.saas_agents.find_one({"id": agent_id})
+    if not agent:
+        raise HTTPException(status_code=404, detail="Agent not found")
+    
+    tenant_name = ""
+    if transaction.tenant_id:
+        tenant = await db.saas_tenants.find_one({"id": transaction.tenant_id}, {"_id": 0, "name": 1})
+        tenant_name = tenant.get("name", "") if tenant else ""
+    
+    transaction_doc = {
+        "id": str(uuid.uuid4()),
+        "agent_id": agent_id,
+        "type": transaction.type,
+        "amount": transaction.amount,
+        "tenant_id": transaction.tenant_id,
+        "tenant_name": tenant_name,
+        "notes": transaction.notes or "",
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.saas_agent_transactions.insert_one(transaction_doc)
+    
+    if transaction.type == "commission":
+        await db.saas_agents.update_one({"id": agent_id}, {
+            "$inc": {"total_earnings": transaction.amount, "pending_earnings": transaction.amount}
+        })
+    elif transaction.type == "payout":
+        await db.saas_agents.update_one({"id": agent_id}, {
+            "$inc": {"pending_earnings": -transaction.amount, "paid_earnings": transaction.amount}
+        })
+    
+    return AgentTransactionResponse(**{k: v for k, v in transaction_doc.items() if k != "_id"})
+
+@router.get("/saas/agents/{agent_id}/tenants")
+async def get_agent_tenants(agent_id: str, admin: dict = Depends(get_super_admin)):
+    """Get tenants under an agent"""
+    tenants = await db.saas_tenants.find({"agent_id": agent_id}, {"_id": 0}).to_list(1000)
+    return tenants
+
+@router.post("/saas/agent-login")
+async def agent_login(login_data: AgentLoginRequest):
+    """Agent login"""
+    agent = await db.saas_agents.find_one({"email": login_data.email})
+    if not agent:
+        raise HTTPException(status_code=401, detail="بيانات الدخول غير صحيحة")
+    
+    if not bcrypt.checkpw(login_data.password.encode('utf-8'), agent["password"].encode('utf-8')):
+        raise HTTPException(status_code=401, detail="بيانات الدخول غير صحيحة")
+    
+    if not agent.get("is_active", True):
+        raise HTTPException(status_code=403, detail="الحساب معطل")
+    
+    access_token = create_access_token({
+        "sub": agent["id"],
+        "email": agent["email"],
+        "role": "agent",
+        "type": "agent"
+    })
+    
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "user": {k: v for k, v in agent.items() if k not in ["_id", "password"]}
+    }
+
+
+# ============ TENANT REGISTRATION (Public) ============
+
+@router.post("/saas/register")
+async def register_tenant(tenant: TenantCreate):
+    """Public tenant registration"""
+    existing = await db.saas_tenants.find_one({"email": tenant.email})
+    if existing:
+        raise HTTPException(status_code=400, detail="البريد الإلكتروني مستخدم بالفعل")
+    
+    plan = await db.saas_plans.find_one({"id": tenant.plan_id}, {"_id": 0})
+    if not plan:
+        raise HTTPException(status_code=404, detail="الخطة غير موجودة")
+    
+    now = datetime.now(timezone.utc)
+    trial_ends_at = now + timedelta(days=14)
+    
+    tenant_id = str(uuid.uuid4())
+    hashed_password = bcrypt.hashpw(tenant.password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+    
+    tenant_doc = {
+        "id": tenant_id,
+        "name": tenant.name,
+        "email": tenant.email,
+        "phone": tenant.phone or "",
+        "company_name": tenant.company_name or "",
+        "password": hashed_password,
+        "plan_id": tenant.plan_id,
+        "agent_id": tenant.agent_id if hasattr(tenant, 'agent_id') and tenant.agent_id else None,
+        "is_active": True,
+        "is_trial": True,
+        "trial_ends_at": trial_ends_at.isoformat(),
+        "subscription_type": "monthly",
+        "subscription_starts_at": now.isoformat(),
+        "subscription_ends_at": trial_ends_at.isoformat(),
+        "features_override": {},
+        "limits_override": {},
+        "notes": "",
+        "business_type": tenant.business_type if hasattr(tenant, 'business_type') else "retailer",
+        "database_initialized": False,
+        "created_at": now.isoformat()
+    }
+    
+    await db.saas_tenants.insert_one(tenant_doc)
+    await init_tenant_database(tenant_id)
+    await db.saas_tenants.update_one({"id": tenant_id}, {"$set": {"database_initialized": True}})
+    
+    if tenant_doc.get("agent_id"):
+        agent = await db.saas_agents.find_one({"id": tenant_doc["agent_id"]})
+        if agent:
+            commission = plan.get("monthly_price", 0) * (agent.get("commission_rate", 10) / 100)
+            if commission > 0:
+                transaction_doc = {
+                    "id": str(uuid.uuid4()),
+                    "agent_id": agent["id"],
+                    "type": "commission",
+                    "amount": commission,
+                    "tenant_id": tenant_id,
+                    "tenant_name": tenant.name,
+                    "notes": f"عمولة تسجيل مشترك جديد: {tenant.name}",
+                    "created_at": now.isoformat()
+                }
+                await db.saas_agent_transactions.insert_one(transaction_doc)
+                await db.saas_agents.update_one({"id": agent["id"]}, {
+                    "$inc": {"total_earnings": commission, "pending_earnings": commission}
+                })
+    
+    access_token = create_access_token({
+        "sub": tenant_id,
+        "email": tenant.email,
+        "role": "admin",
+        "type": "tenant",
+        "tenant_id": tenant_id
+    })
+    
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "tenant_id": tenant_id,
+        "message": "تم إنشاء حسابك بنجاح! لديك 14 يوماً تجريبية.",
+        "trial_ends_at": trial_ends_at.isoformat()
+    }
+
+@router.post("/saas/tenant-login")
+async def tenant_login(login_data: AgentLoginRequest):
+    """Tenant login"""
+    tenant = await db.saas_tenants.find_one({"email": login_data.email})
+    if not tenant:
+        raise HTTPException(status_code=401, detail="بيانات الدخول غير صحيحة")
+    
+    if not bcrypt.checkpw(login_data.password.encode('utf-8'), tenant["password"].encode('utf-8')):
+        raise HTTPException(status_code=401, detail="بيانات الدخول غير صحيحة")
+    
+    if not tenant.get("is_active", True):
+        raise HTTPException(status_code=403, detail="الحساب معطل")
+    
+    access_token = create_access_token({
+        "sub": tenant["id"],
+        "email": tenant["email"],
+        "role": "admin",
+        "type": "tenant",
+        "tenant_id": tenant["id"]
+    })
+    
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "tenant_id": tenant["id"],
+        "user": {
+            "id": tenant["id"],
+            "email": tenant["email"],
+            "name": tenant.get("name", ""),
+            "role": "admin",
+            "tenant_id": tenant["id"],
+            "company_name": tenant.get("company_name", "")
+        }
+    }
+
+
+# ============ DATABASE MANAGEMENT ROUTES ============
+
+@router.get("/saas/databases")
+async def get_databases(admin: dict = Depends(get_super_admin)):
+    """Get all tenant databases"""
+    tenants = await db.saas_tenants.find({}, {"_id": 0}).to_list(1000)
+    databases = []
+    
+    for tenant in tenants:
+        db_name = f"tenant_{tenant['id'].replace('-', '_')}"
+        tenant_db = client[db_name]
+        
+        collections = await tenant_db.list_collection_names()
+        total_docs = 0
+        for coll in collections:
+            count = await tenant_db[coll].count_documents({})
+            total_docs += count
+        
+        databases.append({
+            "id": tenant["id"],
+            "name": tenant.get("name", ""),
+            "email": tenant.get("email", ""),
+            "company_name": tenant.get("company_name", ""),
+            "database_name": db_name,
+            "collections_count": len(collections),
+            "documents_count": total_docs,
+            "is_active": tenant.get("is_active", True),
+            "is_frozen": tenant.get("is_frozen", False),
+            "created_at": tenant.get("created_at", "")
+        })
+    
+    return databases
+
+@router.get("/saas/databases/stats")
+async def get_databases_stats(admin: dict = Depends(get_super_admin)):
+    """Get database statistics"""
+    tenants = await db.saas_tenants.find({}, {"_id": 0}).to_list(1000)
+    
+    total_databases = len(tenants)
+    total_collections = 0
+    total_documents = 0
+    
+    for tenant in tenants:
+        db_name = f"tenant_{tenant['id'].replace('-', '_')}"
+        tenant_db = client[db_name]
+        
+        collections = await tenant_db.list_collection_names()
+        total_collections += len(collections)
+        
+        for coll in collections:
+            count = await tenant_db[coll].count_documents({})
+            total_documents += count
+    
+    return {
+        "total_databases": total_databases,
+        "total_collections": total_collections,
+        "total_documents": total_documents
+    }
+
+@router.get("/saas/databases/logs")
+async def get_databases_logs(admin: dict = Depends(get_super_admin)):
+    """Get database logs"""
+    return []
+
+@router.get("/saas/databases/backups")
+async def get_databases_backups(admin: dict = Depends(get_super_admin)):
+    """Get database backups"""
+    return []
+
+@router.post("/saas/databases/{db_id}/backup")
+async def create_database_backup(db_id: str, admin: dict = Depends(get_super_admin)):
+    """Create database backup"""
+    tenant = await db.saas_tenants.find_one({"id": db_id})
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Database not found")
+    
+    db_name = f"tenant_{db_id.replace('-', '_')}"
+    tenant_db = client[db_name]
+    
+    backup_data = {}
+    collections = await tenant_db.list_collection_names()
+    
+    for coll in collections:
+        docs = await tenant_db[coll].find({}, {"_id": 0}).to_list(10000)
+        backup_data[coll] = docs
+    
+    backup_doc = {
+        "id": str(uuid.uuid4()),
+        "tenant_id": db_id,
+        "database_name": db_name,
+        "data": backup_data,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "created_by": admin.get("id", "")
+    }
+    
+    await db.database_backups.insert_one(backup_doc)
+    
+    return {"message": "Backup created successfully", "backup_id": backup_doc["id"]}
+
+@router.post("/saas/databases/{db_id}/freeze")
+async def freeze_database(db_id: str, admin: dict = Depends(get_super_admin)):
+    """Freeze/unfreeze database"""
+    tenant = await db.saas_tenants.find_one({"id": db_id})
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Database not found")
+    
+    new_status = not tenant.get("is_frozen", False)
+    await db.saas_tenants.update_one({"id": db_id}, {"$set": {"is_frozen": new_status}})
+    
+    return {"is_frozen": new_status}
+
+@router.delete("/saas/databases/{db_id}")
+async def delete_database(db_id: str, admin: dict = Depends(get_super_admin)):
+    """Delete tenant database"""
+    tenant = await db.saas_tenants.find_one({"id": db_id})
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Database not found")
+    
+    db_name = f"tenant_{db_id.replace('-', '_')}"
+    await client.drop_database(db_name)
+    await db.saas_tenants.delete_one({"id": db_id})
+    
+    return {"message": "Database deleted successfully"}
+
+@router.get("/saas/databases/{db_id}/export")
+async def export_database(db_id: str, admin: dict = Depends(get_super_admin)):
+    """Export database as JSON"""
+    tenant = await db.saas_tenants.find_one({"id": db_id})
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Database not found")
+    
+    db_name = f"tenant_{db_id.replace('-', '_')}"
+    tenant_db = client[db_name]
+    
+    export_data = {"tenant_id": db_id, "database_name": db_name, "collections": {}}
+    collections = await tenant_db.list_collection_names()
+    
+    for coll in collections:
+        docs = await tenant_db[coll].find({}, {"_id": 0}).to_list(10000)
+        export_data["collections"][coll] = docs
+    
+    json_data = json.dumps(export_data, ensure_ascii=False, indent=2, default=str)
+    
+    return StreamingResponse(
+        io.BytesIO(json_data.encode('utf-8')),
+        media_type="application/json",
+        headers={"Content-Disposition": f"attachment; filename={db_name}_export.json"}
+    )
+
+@router.post("/saas/databases/{db_id}/schedule")
+async def schedule_database_task(db_id: str, task: dict = Body(...), admin: dict = Depends(get_super_admin)):
+    """Schedule database maintenance task"""
+    tenant = await db.saas_tenants.find_one({"id": db_id})
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Database not found")
+    
+    return {"message": "Task scheduled", "task": task}
+
+
+=== robot_manager.py ===
+"""
+Central Robot Manager
+Manages lifecycle of all smart robots as FastAPI background tasks
+"""
+import asyncio
+import logging
+from datetime import datetime, timezone
+from .inventory_robot import InventoryRobot
+from .debt_robot import DebtRobot
+from .report_robot import ReportRobot
+from .customer_robot import CustomerRobot
+from .pricing_robot import PricingRobot
+from .maintenance_robot import MaintenanceRobot
+from .profit_robot import ProfitRobot
+from .repair_robot import RepairRobot
+from .prediction_robot import PredictionRobot
+from .notification_robot import NotificationRobot
+from .supplier_robot import SupplierRobot
+
+logger = logging.getLogger(__name__)
+
+
+class RobotManager:
+    def __init__(self, main_db, client, notification_service, sms_service, email_service):
+        self.db = main_db
+        self.client = client
+        self.notification = notification_service
+        self.sms = sms_service
+        self.email = email_service
+        self.robots = {}
+        self.tasks = {}
+        self.started_at = None
+        self.is_running = False
+
+    def initialize(self):
+        self.robots = {
+            "inventory": InventoryRobot(self.db, self.client, self.notification),
+            "debt": DebtRobot(self.db, self.client, self.notification, self.sms),
+            "report": ReportRobot(self.db, self.client, self.notification, self.email),
+            "customer": CustomerRobot(self.db, self.client, self.notification),
+            "pricing": PricingRobot(self.db, self.client, self.notification),
+            "maintenance": MaintenanceRobot(self.db, self.client, self.notification),
+            "profit": ProfitRobot(self.db, self.client, self.notification),
+            "repair": RepairRobot(self.db, self.client, self.notification),
+            "prediction": PredictionRobot(self.db, self.client, self.notification),
+            "notification_bot": NotificationRobot(self.db, self.client, self.notification),
+            "supplier": SupplierRobot(self.db, self.client, self.notification),
+        }
+        logger.info(f"Initialized {len(self.robots)} robots")
+
+    async def start_all(self):
+        if self.is_running:
+            logger.warning("Robots already running")
+            return
+        if not self.robots:
+            self.initialize()
+        self.is_running = True
+        self.started_at = datetime.now(timezone.utc).isoformat()
+        for name, robot in self.robots.items():
+            task = asyncio.create_task(robot.start(), name=f"robot_{name}")
+            self.tasks[name] = task
+            logger.info(f"Started robot: {robot.name}")
+
+    async def stop_all(self):
+        for name, robot in self.robots.items():
+            await robot.stop()
+            if name in self.tasks:
+                self.tasks[name].cancel()
+        self.tasks.clear()
+        self.is_running = False
+        logger.info("All robots stopped")
+
+    async def restart_robot(self, name: str) -> bool:
+        if name not in self.robots:
+            return False
+        robot = self.robots[name]
+        await robot.stop()
+        if name in self.tasks:
+            self.tasks[name].cancel()
+        await asyncio.sleep(1)
+        task = asyncio.create_task(robot.start(), name=f"robot_{name}")
+        self.tasks[name] = task
+        logger.info(f"Restarted robot: {robot.name}")
+        return True
+
+    async def run_robot_once(self, name: str, **kwargs):
+        if name not in self.robots:
+            return None
+        return await self.robots[name].run_once(**kwargs)
+
+    def get_status(self) -> dict:
+        status = {
+            "started_at": self.started_at,
+            "is_running": self.is_running,
+            "robots": {},
+        }
+        for name, robot in self.robots.items():
+            status["robots"][name] = {
+                "name": robot.name,
+                "is_running": robot.is_running,
+                "last_run": robot.last_run,
+                "stats": robot.stats,
+            }
+        return status
+
+📁 FRONTEND FILES:
+
+=== package.json ===
+{
+  "name": "frontend",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
+    "@fontsource/cairo": "^5.2.7",
+    "@fontsource/manrope": "^5.2.8",
+    "@fontsource/outfit": "^5.2.8",
+    "@hookform/resolvers": "^5.0.1",
+    "@radix-ui/react-accordion": "^1.2.8",
+    "@radix-ui/react-alert-dialog": "^1.1.11",
+    "@radix-ui/react-aspect-ratio": "^1.1.4",
+    "@radix-ui/react-avatar": "^1.1.7",
+    "@radix-ui/react-checkbox": "^1.2.3",
+    "@radix-ui/react-collapsible": "^1.1.8",
+    "@radix-ui/react-context-menu": "^2.2.12",
+    "@radix-ui/react-dialog": "^1.1.11",
+    "@radix-ui/react-dropdown-menu": "^2.1.12",
+    "@radix-ui/react-hover-card": "^1.1.11",
+    "@radix-ui/react-label": "^2.1.4",
+    "@radix-ui/react-menubar": "^1.1.12",
+    "@radix-ui/react-navigation-menu": "^1.2.10",
+    "@radix-ui/react-popover": "^1.1.11",
+    "@radix-ui/react-progress": "^1.1.4",
+    "@radix-ui/react-radio-group": "^1.3.4",
+    "@radix-ui/react-scroll-area": "^1.2.6",
+    "@radix-ui/react-select": "^2.2.2",
+    "@radix-ui/react-separator": "^1.1.4",
+    "@radix-ui/react-slider": "^1.3.2",
+    "@radix-ui/react-slot": "^1.2.0",
+    "@radix-ui/react-switch": "^1.2.2",
+    "@radix-ui/react-tabs": "^1.1.9",
+    "@radix-ui/react-toast": "^1.2.11",
+    "@radix-ui/react-toggle": "^1.1.6",
+    "@radix-ui/react-toggle-group": "^1.1.7",
+    "@radix-ui/react-tooltip": "^1.2.4",
+    "@tanstack/react-virtual": "^3.13.18",
+    "axios": "^1.8.4",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "cmdk": "^1.1.1",
+    "cra-template": "1.2.0",
+    "date-fns": "^4.1.0",
+    "embla-carousel-react": "^8.6.0",
+    "input-otp": "^1.4.2",
+    "jsbarcode": "^3.12.3",
+    "lucide-react": "^0.507.0",
+    "next-themes": "^0.4.6",
+    "react": "^19.0.0",
+    "react-day-picker": "8.10.1",
+    "react-dom": "^19.0.0",
+    "react-hook-form": "^7.56.2",
+    "react-resizable-panels": "^3.0.1",
+    "react-router-dom": "^7.5.1",
+    "react-scripts": "5.0.1",
+    "recharts": "^3.7.0",
+    "sonner": "^2.0.3",
+    "tailwind-merge": "^3.2.0",
+    "tailwindcss-animate": "^1.0.7",
+    "vaul": "^1.1.2",
+    "xlsx": "^0.18.5",
+    "zod": "^3.24.4"
+  },
+  "scripts": {
+    "start": "craco start",
+    "build": "craco build",
+    "test": "craco test"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
+    "@craco/craco": "^7.1.0",
+    "@eslint/js": "9.23.0",
+    "autoprefixer": "^10.4.20",
+    "eslint": "9.23.0",
+    "eslint-plugin-import": "2.31.0",
+    "eslint-plugin-jsx-a11y": "6.10.2",
+    "eslint-plugin-react": "7.37.4",
+    "eslint-plugin-react-hooks": "5.2.0",
+    "globals": "15.15.0",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.17"
+  },
+  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
+}
+
+=== App.js/tsx ===
+import "@/App.css";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { Toaster } from "@/components/ui/sonner";
+import { LanguageProvider } from "./contexts/LanguageContext";
+import { AuthProvider, useAuth } from "./contexts/AuthContext";
+import { ThemeProvider } from "./contexts/ThemeContext";
+import { DateFormatProvider } from "./contexts/DateFormatContext";
+import ErrorBoundary from "./components/ErrorBoundary";
+
+// Import global date formatter to apply Western numerals system-wide
+import './utils/globalDateFormatter';
+
+// Pages
+import RegisterPage from "./pages/RegisterPage";
+import DashboardPage from "./pages/DashboardPage";
+import ProductsPage from "./pages/ProductsPage";
+import ProductDetailPage from "./pages/ProductDetailPage";
+import AddProductPage from "./pages/AddProductPage";
+import EditProductPage from "./pages/EditProductPage";
+import UsersPage from "./pages/UsersPage";
+import POSPage from "./pages/POSPage";
+import CustomersPage from "./pages/CustomersPage";
+import SuppliersPage from "./pages/SuppliersPage";
+import CashManagementPage from "./pages/CashManagementPage";
+import SalesHistoryPage from "./pages/SalesHistoryPage";
+import EmployeesPage from "./pages/EmployeesPage";
+import DebtsPage from "./pages/DebtsPage";
+import ReportsPage from "./pages/ReportsPage";
+import ApiKeysPage from "./pages/ApiKeysPage";
+import RechargePage from "./pages/RechargePage";
+import ProductFamiliesPage from "./pages/ProductFamiliesPage";
+import CustomerDebtsPage from "./pages/CustomerDebtsPage";
+import SettingsPage from "./pages/SettingsPage";
+import BulkPriceUpdatePage from "./pages/BulkPriceUpdatePage";
+import PurchasesPage from "./pages/PurchasesPage";
+import WarehousesPage from "./pages/WarehousesPage";
+import InventoryCountPage from "./pages/InventoryCountPage";
+import BarcodePrintPage from "./pages/BarcodePrintPage";
+import DailySessionsPage from "./pages/DailySessionsPage";
+import CustomerFamiliesPage from "./pages/CustomerFamiliesPage";
+import SupplierFamiliesPage from "./pages/SupplierFamiliesPage";
+import WooCommercePage from "./pages/WooCommercePage";
+import ShippingPage from "./pages/ShippingPage";
+import SimManagementPage from "./pages/SimManagementPage";
+import AdvancedAnalyticsPage from "./pages/AdvancedAnalyticsPage";
+import LoyaltyPage from "./pages/LoyaltyPage";
+import WholesaleServicesPage from "./pages/WholesaleServicesPage";
+import FlexyServicePage from "./pages/FlexyServicePage";
+import IdoomServicePage from "./pages/IdoomServicePage";
+import CardsServicePage from "./pages/CardsServicePage";
+import OperationsPage from "./pages/OperationsPage";
+import ProfitRatesPage from "./pages/ProfitRatesPage";
+import TransfersPage from "./pages/TransfersPage";
+import PhoneDirectoryPage from "./pages/PhoneDirectoryPage";
+import SidebarSettingsPage from "./pages/SidebarSettingsPage";
+import RepairReceptionPage from "./pages/RepairReceptionPage";
+import RepairTrackingPage from "./pages/RepairTrackingPage";
+import SparePartsPage from "./pages/SparePartsPage";
+import ExpensesPage from "./pages/ExpensesPage";
+import NotificationsPage from "./pages/NotificationsPage";
+import AdvancedSalesReportPage from "./pages/AdvancedSalesReportPage";
+import SalesPermissionsPage from "./pages/SalesPermissionsPage";
+import PriceHistoryPage from "./pages/PriceHistoryPage";
+import SmartReportsPage from "./pages/SmartReportsPage";
+import EmployeeAlertsPage from "./pages/EmployeeAlertsPage";
+import FeaturesPage from "./pages/FeaturesPage";
+import PermissionsPage from "./pages/PermissionsPage";
+import SystemUpdatesPage from "./pages/SystemUpdatesPage";
+import AgentDashboardPage from "./pages/AgentDashboardPage";
+import UnifiedLoginPage from "./pages/UnifiedLoginPage";
+import TenantDashboardPage from "./pages/TenantDashboardPage";
+import EmailNotificationsPage from "./pages/EmailNotificationsPage";
+import PaymentsPage from "./pages/PaymentsPage";
+
+// AI & Smart Accounting Pages
+import SmartDashboardPage from "./pages/SmartDashboardPage";
+import AIChatPage from "./pages/AIChatPage";
+import AIAgentsPage from "./pages/AIAgentsPage";
+import DateTimeSettingsPage from "./pages/DateTimeSettingsPage";
+
+// New Feature Pages
+import WhatsAppPage from "./pages/WhatsAppPage";
+import IntegrationStatusPage from "./pages/IntegrationStatusPage";
+import TaxReportsPage from "./pages/TaxReportsPage";
+import CurrenciesPage from "./pages/CurrenciesPage";
+import BankingPage from "./pages/BankingPage";
+import RobotsPage from "./pages/RobotsPage";
+import AutoReportsPage from "./pages/AutoReportsPage";
+
+// Legendary Build Pages
+import DefectiveGoodsPage from "./pages/DefectiveGoodsPage";
+import BackupSystemPage from "./pages/BackupSystemPage";
+import SecurityDashboardPage from "./pages/SecurityDashboardPage";
+import WalletPage from "./pages/WalletPage";
+import TaskManagementPage from "./pages/TaskManagementPage";
+import InternalChatPage from "./pages/InternalChatPage";
+import SupplierTrackingPage from "./pages/SupplierTrackingPage";
+import TwoFactorPage from "./pages/TwoFactorPage";
+import SmartNotificationsPage from "./pages/SmartNotificationsPage";
+
+// Landing & SaaS Pages
+import LandingPage from "./pages/landing/LandingPage";
+import SaasRegisterPage from "./pages/landing/RegisterPage";
+import PricingPage from "./pages/landing/PricingPage";
+import SaasAdminPage from "./pages/admin/SaasAdminPage";
+import FeatureFlagsPage from "./pages/admin/FeatureFlagsPage";
+import StoreManagementPage from "./pages/store/StoreManagementPage";
+import PublicStorePage from "./pages/store/PublicStorePage";
+
+// Protected Route Component
+const ProtectedRoute = ({ children, adminOnly = false, tenantOnly = false }) => {
+  const { isAuthenticated, loading, isAdmin, isSuperAdmin, isTenant, user } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="spinner" />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/portal" replace />;
+  }
+
+  // Super Admin should only access /saas-admin, /system-updates, /robots, /auto-reports, and legendary build admin pages
+  if (isSuperAdmin && !window.location.pathname.startsWith('/saas-admin') && !window.location.pathname.startsWith('/system-updates') && !window.location.pathname.startsWith('/robots') && !window.location.pathname.startsWith('/auto-reports') && !window.location.pathname.startsWith('/security-dashboard') && !window.location.pathname.startsWith('/backup-system') && !window.location.pathname.startsWith('/wallet-management')) {
+    return <Navigate to="/saas-admin" replace />;
+  }
+
+  // Tenant should not access /saas-admin
+  if (isTenant && window.location.pathname.startsWith('/saas-admin')) {
+    return <Navigate to="/" replace />;
+  }
+
+  if (adminOnly && !isAdmin) {
+    return <Navigate to="/" replace />;
+  }
+
+  if (tenantOnly && !isTenant) {
+    return <Navigate to="/" replace />;
+  }
+
+  return children;
+};
+
+// Public Route Component (redirect if authenticated)
+const PublicRoute = ({ children }) => {
+  const { isAuthenticated, loading, isSuperAdmin, isTenant, isAgent, user } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="spinner" />
+      </div>
+    );
+  }
+
+  if (isAuthenticated) {
+    // Redirect based on user type
+    if (isSuperAdmin) {
+      return <Navigate to="/saas-admin" replace />;
+    }
+    if (isAgent) {
+      return <Navigate to="/agent/dashboard" replace />;
+    }
+    if (isTenant) {
+      return <Navigate to="/" replace />;
+    }
+    // Default redirect
+    return <Navigate to="/" replace />;
+  }
+
+  return children;
+};
+
+function AppRoutes() {
+  return (
+    <Routes>
+      {/* Landing & SaaS Public Routes */}
+      <Route path="/landing" element={<LandingPage />} />
+      <Route path="/register" element={<SaasRegisterPage />} />
+      <Route path="/pricing" element={<PricingPage />} />
+      <Route path="/shop/:slug" element={<PublicStorePage />} />
+      
+      {/* Unified Login - Single Entry Point for ALL users */}
+      <Route path="/portal" element={<UnifiedLoginPage />} />
+      <Route path="/login" element={<Navigate to="/portal" replace />} />
+      <Route path="/tenant-login" element={<Navigate to="/portal" replace />} />
+      <Route path="/agent-login" element={<Navigate to="/portal" replace />} />
+      
+      {/* Agent Dashboard */}
+      <Route path="/agent/dashboard" element={<AgentDashboardPage />} />
+
+      {/* Tenant Dashboard */}
+      <Route path="/tenant/dashboard" element={<TenantDashboardPage />} />
+
+      {/* AI & Smart Accounting Routes */}
+      <Route
+        path="/smart-dashboard"
+        element={
+          <ProtectedRoute>
+            <SmartDashboardPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/ai-chat"
+        element={
+          <ProtectedRoute>
+            <AIChatPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/ai-agents"
+        element={
+          <ProtectedRoute>
+            <AIAgentsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/settings/datetime"
+        element={
+          <ProtectedRoute>
+            <DateTimeSettingsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/whatsapp"
+        element={
+          <ProtectedRoute>
+            <WhatsAppPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/integrations/status"
+        element={
+          <ProtectedRoute>
+            <IntegrationStatusPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/integrations/yalidine"
+        element={
+          <ProtectedRoute>
+            <IntegrationStatusPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/tax-reports"
+        element={
+          <ProtectedRoute>
+            <TaxReportsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/currencies"
+        element={
+          <ProtectedRoute>
+            <CurrenciesPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/banking"
+        element={
+          <ProtectedRoute>
+            <BankingPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/robots"
+        element={
+          <ProtectedRoute>
+            <RobotsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/auto-reports"
+        element={
+          <ProtectedRoute>
+            <AutoReportsPage />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Legendary Build Routes */}
+      <Route path="/defective-goods" element={<ProtectedRoute><DefectiveGoodsPage /></ProtectedRoute>} />
+      <Route path="/backup-system" element={<ProtectedRoute><BackupSystemPage /></ProtectedRoute>} />
+      <Route path="/security-dashboard" element={<ProtectedRoute><SecurityDashboardPage /></ProtectedRoute>} />
+      <Route path="/wallet-management" element={<ProtectedRoute><WalletPage /></ProtectedRoute>} />
+      <Route path="/task-management" element={<ProtectedRoute><TaskManagementPage /></ProtectedRoute>} />
+      <Route path="/internal-chat" element={<ProtectedRoute><InternalChatPage /></ProtectedRoute>} />
+      <Route path="/supplier-tracking" element={<ProtectedRoute><SupplierTrackingPage /></ProtectedRoute>} />
+      <Route path="/two-factor" element={<ProtectedRoute><TwoFactorPage /></ProtectedRoute>} />
+
+      {/* SaaS Admin Dashboard */}
+      <Route
+        path="/saas-admin"
+        element={
+          <ProtectedRoute>
+            <SaasAdminPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/saas-admin/feature-flags"
+        element={
+          <ProtectedRoute>
+            <FeatureFlagsPage />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Protected Routes */}
+      <Route
+        path="/"
+        element={
+          <ProtectedRoute>
+            <DashboardPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/pos"
+        element={
+          <ProtectedRoute>
+            <POSPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/products"
+        element={
+          <ProtectedRoute>
+            <ProductsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/products/add"
+        element={
+          <ProtectedRoute adminOnly>
+            <AddProductPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/products/:id"
+        element={
+          <ProtectedRoute>
+            <ProductDetailPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/products/:id/edit"
+        element={
+          <ProtectedRoute adminOnly>
+            <EditProductPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/sales"
+        element={
+          <ProtectedRoute>
+            <SalesHistoryPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/purchases"
+        element={
+          <ProtectedRoute adminOnly>
+            <PurchasesPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/warehouses"
+        element={
+          <ProtectedRoute adminOnly>
+            <WarehousesPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/inventory-count"
+        element={
+          <ProtectedRoute adminOnly>
+            <InventoryCountPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/barcode-print"
+        element={
+          <ProtectedRoute adminOnly>
+            <BarcodePrintPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/customers"
+        element={
+          <ProtectedRoute>
+            <CustomersPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/suppliers"
+        element={
+          <ProtectedRoute adminOnly>
+            <SuppliersPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/store"
+        element={
+          <ProtectedRoute adminOnly>
+            <StoreManagementPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/cash"
+        element={
+          <ProtectedRoute adminOnly>
+            <CashManagementPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/users"
+        element={
+          <ProtectedRoute adminOnly>
+            <UsersPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/employees"
+        element={
+          <ProtectedRoute adminOnly>
+            <EmployeesPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/debts"
+        element={
+          <ProtectedRoute adminOnly>
+            <DebtsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/reports"
+        element={
+          <ProtectedRoute adminOnly>
+            <ReportsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/api-keys"
+        element={
+          <ProtectedRoute adminOnly>
+            <ApiKeysPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/features"
+        element={
+          <ProtectedRoute adminOnly>
+            <FeaturesPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/permissions"
+        element={
+          <ProtectedRoute adminOnly>
+            <PermissionsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/system-updates"
+        element={
+          <ProtectedRoute adminOnly>
+            <SystemUpdatesPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/recharge"
+        element={
+          <ProtectedRoute>
+            <RechargePage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/product-families"
+        element={
+          <ProtectedRoute adminOnly>
+            <ProductFamiliesPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/customer-debts"
+        element={
+          <ProtectedRoute>
+            <CustomerDebtsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/settings"
+        element={
+          <ProtectedRoute adminOnly>
+            <SettingsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/settings/sidebar"
+        element={
+          <ProtectedRoute adminOnly>
+            <SidebarSettingsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/settings/sales-permissions"
+        element={
+          <ProtectedRoute adminOnly>
+            <SalesPermissionsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/sales/advanced-report"
+        element={
+          <ProtectedRoute adminOnly>
+            <AdvancedSalesReportPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/notifications"
+        element={
+          <ProtectedRoute>
+            <NotificationsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/email-notifications"
+        element={
+          <ProtectedRoute adminOnly>
+            <EmailNotificationsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/smart-notifications"
+        element={
+          <ProtectedRoute>
+            <SmartNotificationsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/payments"
+        element={
+          <ProtectedRoute adminOnly>
+            <PaymentsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/bulk-price-update"
+        element={
+          <ProtectedRoute adminOnly>
+            <BulkPriceUpdatePage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/daily-sessions"
+        element={
+          <ProtectedRoute adminOnly>
+            <DailySessionsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/customer-families"
+        element={
+          <ProtectedRoute adminOnly>
+            <CustomerFamiliesPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/supplier-families"
+        element={
+          <ProtectedRoute adminOnly>
+            <SupplierFamiliesPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/woocommerce"
+        element={
+          <ProtectedRoute adminOnly>
+            <WooCommercePage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/shipping"
+        element={
+          <ProtectedRoute adminOnly>
+            <ShippingPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/sim-management"
+        element={
+          <ProtectedRoute adminOnly>
+            <SimManagementPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/analytics"
+        element={
+          <ProtectedRoute adminOnly>
+            <AdvancedAnalyticsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/loyalty"
+        element={
+          <ProtectedRoute adminOnly>
+            <LoyaltyPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/services"
+        element={
+          <ProtectedRoute>
+            <WholesaleServicesPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/services/flexy"
+        element={
+          <ProtectedRoute>
+            <FlexyServicePage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/services/idoom"
+        element={
+          <ProtectedRoute>
+            <IdoomServicePage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/services/cards"
+        element={
+          <ProtectedRoute>
+            <CardsServicePage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/services/operations"
+        element={
+          <ProtectedRoute>
+            <OperationsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/services/profits"
+        element={
+          <ProtectedRoute>
+            <ProfitRatesPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/services/transfers"
+        element={
+          <ProtectedRoute>
+            <TransfersPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/services/directory"
+        element={
+          <ProtectedRoute>
+            <PhoneDirectoryPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/repairs"
+        element={
+          <ProtectedRoute>
+            <RepairTrackingPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/repairs/new"
+        element={
+          <ProtectedRoute>
+            <RepairReceptionPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/repairs/parts"
+        element={
+          <ProtectedRoute>
+            <SparePartsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/expenses"
+        element={
+          <ProtectedRoute>
+            <ExpensesPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/price-history"
+        element={
+          <ProtectedRoute>
+            <PriceHistoryPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/smart-reports"
+        element={
+          <ProtectedRoute>
+            <SmartReportsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/employee-alerts"
+        element={
+          <ProtectedRoute>
+            <EmployeeAlertsPage />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Catch all */}
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  );
+}
+
+function App() {
+  return (
+    <ThemeProvider>
+      <LanguageProvider>
+        <DateFormatProvider>
+          <AuthProvider>
+            <BrowserRouter>
+              <ErrorBoundary>
+                <AppRoutes />
+              </ErrorBoundary>
+              <Toaster position="top-center" richColors />
+            </BrowserRouter>
+          </AuthProvider>
+        </DateFormatProvider>
+      </LanguageProvider>
+    </ThemeProvider>
+  );
+}
+
+export default App;
+
+✅ END OF REPORT
